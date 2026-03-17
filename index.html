@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Ejecutivo de Ventas | Soluciones Veterinarias SAC</title>
+  <meta name="description" content="Dashboard ejecutivo de seguimiento de ventas — Soluciones Veterinarias SAC" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* ─── DESIGN TOKENS ─── */
+    :root {
+      --bg-base: #080d14;
+      --bg-surface: #0d1520;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --bg-card-hover: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(56, 189, 248, 0.35);
+
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-yellow: #fbbf24;
+      --accent-red: #f87171;
+      --accent-purple: #a78bfa;
+
+      --text-primary: #f0f6ff;
+      --text-secondary: #8ba3be;
+      --text-muted: #4a6282;
+
+      --green-bar: #22c55e;
+      --yellow-bar: #eab308;
+      --red-bar: #ef4444;
+
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+
+      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.45);
+      --shadow-glow: 0 0 24px rgba(56, 189, 248, 0.18);
+
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ─── LIGHT MODE TOKENS ─── */
+    body.light-mode {
+      --bg-base: #f0f4f8;
+      --bg-surface: #ffffff;
+      --bg-card: rgba(255, 255, 255, 0.85);
+      --bg-card-hover: rgba(255, 255, 255, 1);
+      --border: rgba(0, 0, 0, 0.09);
+      --border-glow: rgba(2, 132, 199, 0.30);
+
+      --accent-blue: #0284c7;
+      --accent-green: #059669;
+      --accent-yellow: #d97706;
+      --accent-red: #dc2626;
+      --accent-purple: #7c3aed;
+
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.10);
+      --shadow-glow: 0 0 20px rgba(2, 132, 199, 0.15);
+    }
+
+    body.light-mode {
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(2, 132, 199, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(5, 150, 105, 0.05) 0%, transparent 60%);
+    }
+
+    body.light-mode ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+    }
+
+    body.light-mode .data-table tbody tr {
+      border-bottom-color: rgba(0, 0, 0, 0.05);
+    }
+
+    body.light-mode .data-table thead th {
+      background: rgba(2, 132, 199, 0.07);
+    }
+
+    body.light-mode .progress-track {
+      background: rgba(0, 0, 0, 0.09);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 15px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(56, 189, 248, 0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(52, 211, 153, 0.07) 0%, transparent 60%);
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-surface);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.35);
+      border-radius: 3px;
+    }
+
+    /* ─── LAYOUT ─── */
+    .page-wrapper {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 28px 32px 48px;
+    }
+
+    /* ─── STICKY TOP SECTION ─── */
+    .sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: var(--bg-base);
+      padding-top: 28px;
+      margin-top: -28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      transition: background var(--transition), border-color var(--transition);
+    }
+
+    body.light-mode .sticky-top {
+      background: rgba(240, 244, 248, 0.96);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
+    }
+
+    /* JS-triggered un-fix para móviles */
+    body.device-is-mobile .sticky-top {
+      position: relative !important;
+      top: auto !important;
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      box-shadow: none !important;
+      border-bottom: 1px solid var(--border);
+      z-index: 10 !important;
+    }
+
+    body.light-mode.device-is-mobile .sticky-top {
+      box-shadow: none !important;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1e3a5f 0%, #38bdf8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.30);
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .brand-text p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .period-badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .period-badge span {
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    .update-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .update-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+      }
+    }
+
+    /* ─── ONEDRIVE BANNER ─── */
+    .onedrive-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.08), rgba(52, 211, 153, 0.05));
+      border: 1px solid rgba(56, 189, 248, 0.20);
+      border-radius: var(--radius-md);
+      padding: 10px 18px;
+      margin-bottom: 28px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .onedrive-banner .od-icon {
+      font-size: 1rem;
+    }
+
+    .onedrive-banner strong {
+      color: var(--accent-blue);
+    }
+
+    .onedrive-badge {
+      margin-left: auto;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 0.70rem;
+      color: var(--accent-blue);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* ─── KPI CARDS ─── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-card);
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .kpi-card.blue::before {
+      background: linear-gradient(90deg, var(--accent-blue), transparent);
+    }
+
+    .kpi-card.green::before {
+      background: linear-gradient(90deg, var(--accent-green), transparent);
+    }
+
+    .kpi-card.yellow::before {
+      background: linear-gradient(90deg, var(--accent-yellow), transparent);
+    }
+
+    .kpi-card.purple::before {
+      background: linear-gradient(90deg, var(--accent-purple), transparent);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-glow), var(--shadow-card);
+    }
+
+    .kpi-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+
+    .kpi-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .kpi-icon.blue {
+      background: rgba(56, 189, 248, 0.15);
+    }
+
+    .kpi-icon.green {
+      background: rgba(52, 211, 153, 0.15);
+    }
+
+    .kpi-icon.yellow {
+      background: rgba(251, 191, 36, 0.15);
+    }
+
+    .kpi-icon.purple {
+      background: rgba(167, 139, 250, 0.15);
+    }
+
+    .kpi-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .kpi-card.blue .kpi-value {
+      color: var(--accent-blue);
+    }
+
+    .kpi-card.green .kpi-value {
+      color: var(--accent-green);
+    }
+
+    .kpi-card.yellow .kpi-value {
+      color: var(--accent-yellow);
+    }
+
+    .kpi-card.purple .kpi-value {
+      color: var(--accent-purple);
+    }
+
+    .kpi-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .kpi-sub-val {
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+
+    .kpi-sub-val.neg {
+      color: var(--accent-red);
+    }
+
+    .kpi-sub-val.pos {
+      color: var(--accent-green);
+    }
+
+    .kpi-sub-val.neu {
+      color: var(--text-secondary);
+    }
+
+    /* ─── CHARTS LAYOUT ─── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .charts-bottom {
+      margin-bottom: 28px;
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-card);
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .chart-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .chart-card-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: clamp(220px, 28vh, 340px);
+      width: 100%;
+    }
+
+    .donut-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.73rem;
+    }
+
+    .legend-dot-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-pct {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* ─── SECTION TITLE ─── */
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      color: var(--accent-blue);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border-glow), transparent);
+    }
+
+    /* ─── DATA TABLE ─── */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      overflow-x: auto;
+      margin-bottom: 28px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table {
+      min-width: 780px;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .data-table thead th {
+      background: rgba(56, 189, 248, 0.07);
+      color: var(--accent-blue);
+      font-weight: 600;
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 13px 16px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .data-table thead th:first-child {
+      text-align: left;
+    }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background var(--transition);
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .data-table tbody tr.total-row {
+      background: rgba(56, 189, 248, 0.05);
+      border-top: 1px solid rgba(56, 189, 248, 0.20);
+    }
+
+    .data-table tbody tr.total-row td {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .data-table tbody tr.subcat td:first-child {
+      padding-left: 32px;
+      color: var(--text-secondary);
+    }
+
+    .data-table td {
+      padding: 11px 16px;
+      text-align: right;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    .data-table td:first-child {
+      text-align: left;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .data-table td.group-label {
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    /* ─── PROGRESS BAR ─── */
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 180px;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-fill.green {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+    }
+
+    .progress-fill.yellow {
+      background: linear-gradient(90deg, #ca8a04, #eab308);
+    }
+
+    .progress-fill.red {
+      background: linear-gradient(90deg, #b91c1c, #ef4444);
+    }
+
+    .pct-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.80rem;
+      font-weight: 700;
+      min-width: 38px;
+      text-align: right;
+    }
+
+    .pct-label.green {
+      color: var(--accent-green);
+    }
+
+    .pct-label.yellow {
+      color: var(--accent-yellow);
+    }
+
+    .pct-label.red {
+      color: var(--accent-red);
+    }
+
+    /* ─── GAP VALUE ─── */
+    .gap-pos {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .gap-neg {
+      color: var(--accent-red);
+      font-weight: 600;
+    }
+
+    /* ─── YOY BADGE ─── */
+    .yoy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .yoy-badge.pos {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+    }
+
+    .yoy-badge.neg {
+      background: rgba(248, 113, 113, 0.12);
+      color: var(--accent-red);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+    }
+
+    .yoy-badge.neu {
+      background: rgba(139, 163, 190, 0.10);
+      color: var(--text-secondary);
+      border: 1px solid rgba(139, 163, 190, 0.15);
+    }
+
+    /* ─── FOOTER ─── */
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-od {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+
+    .footer-od a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    /* ─── THEME TOGGLE ─── */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 14px 5px 8px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      transition: border-color var(--transition), background var(--transition);
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent-blue);
+      color: var(--text-primary);
+    }
+
+    .toggle-track {
+      position: relative;
+      width: 32px;
+      height: 18px;
+      background: var(--text-muted);
+      border-radius: 999px;
+      transition: background var(--transition);
+      flex-shrink: 0;
+    }
+
+    .toggle-track.on {
+      background: var(--accent-blue);
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform var(--transition);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-track.on .toggle-knob {
+      transform: translateX(14px);
+    }
+
+    .toggle-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* ─── DOWNLOAD BUTTON ─── */
+    .btn-download {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: linear-gradient(135deg, #0369a1, #38bdf8);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.30);
+      white-space: nowrap;
+    }
+
+    .btn-download:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.40);
+    }
+
+    .btn-download:active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    body.light-mode .btn-download {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+    }
+
+    /* ─── EXTRA HEADER BUTTONS ─── */
+    .btn-fullscreen,
+    .btn-pdf {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+    }
+
+    .btn-fullscreen:hover,
+    .btn-pdf:hover {
+      border-color: var(--accent-blue);
+      color: var(--text-primary);
+    }
+
+    /* ─── PERIOD SELECTOR ─── */
+    .period-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 0 4px;
+      flex-wrap: wrap;
+    }
+
+    .period-row-label {
+      font-size: 0.70rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .period-tab {
+      padding: 4px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 0.73rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+    }
+
+    .period-tab:hover {
+      border-color: var(--accent-blue);
+      color: var(--text-primary);
+    }
+
+    .period-tab.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* ─── ENTRY ANIMATION ─── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-up:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+
+    .fade-up:nth-child(2) {
+      animation-delay: 0.12s;
+    }
+
+    .fade-up:nth-child(3) {
+      animation-delay: 0.19s;
+    }
+
+    .fade-up:nth-child(4) {
+      animation-delay: 0.26s;
+    }
+
+    /* ─── TOAST NOTIFICATION ─── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e3a5f;
+      color: #f0f6ff;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 999px;
+      padding: 10px 24px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 99999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    body.light-mode .toast {
+      background: #0f172a;
+    }
+
+    /* ─── RISK ALERT OVERLAY ─── */
+    .risk-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      padding: 20px;
+    }
+
+    .risk-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .risk-panel {
+      background: #0d1520;
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 20px;
+      padding: 28px 32px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 0 60px rgba(248, 113, 113, 0.20);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    body.light-mode .risk-panel {
+      background: #fff;
+    }
+
+    .risk-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .risk-panel-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f87171;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .risk-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: color var(--transition);
+    }
+
+    .risk-close:hover {
+      color: var(--accent-red);
+    }
+
+    .risk-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: rgba(248, 113, 113, 0.07);
+      border: 1px solid rgba(248, 113, 113, 0.15);
+    }
+
+    .risk-item-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+    }
+
+    .risk-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .risk-badge {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #f87171;
+      white-space: nowrap;
+      margin-left: 16px;
+    }
+
+    .risk-footer-note {
+      margin-top: 16px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ─── SORTABLE TABLE HEADERS ─── */
+    .data-table thead th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .data-table thead th.sortable:hover {
+      color: var(--text-primary);
+    }
+
+    .data-table thead th .sort-icon {
+      display: inline-block;
+      margin-left: 5px;
+      opacity: 0.35;
+      font-size: 0.65rem;
+      vertical-align: middle;
+      transition: opacity var(--transition);
+    }
+
+    .data-table thead th.sort-asc .sort-icon,
+    .data-table thead th.sort-desc .sort-icon {
+      opacity: 1;
+      color: var(--accent-blue);
+    }
+
+    /* ─── KPI TOOLTIP ─── */
+    .kpi-card {
+      position: relative;
+    }
+
+    .kpi-tooltip {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0a111d;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      width: 230px;
+      font-size: 0.73rem;
+      color: var(--text-secondary);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      line-height: 1.55;
+    }
+
+    body.light-mode .kpi-tooltip {
+      background: #fff;
+    }
+
+    .kpi-card:hover .kpi-tooltip {
+      opacity: 1;
+    }
+
+    .kpi-tooltip strong {
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.78rem;
+    }
+
+    .kpi-tt-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+
+    .kpi-tt-row .val {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .kpi-tt-row .neg {
+      color: var(--accent-red);
+      font-weight: 700;
+    }
+
+    .kpi-tt-row .pos {
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+
+    /* ─── PRINT / PDF EXPORT ─── */
+    @media print {
+      .sticky-top {
+        position: relative !important;
+      }
+
+      .header-meta .theme-toggle,
+      .header-meta .btn-download,
+      .header-meta .btn-fullscreen,
+      .header-meta .btn-pdf,
+      .onedrive-banner,
+      .period-row,
+      .footer,
+      .risk-overlay {
+        display: none !important;
+      }
+
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+
+      .kpi-card,
+      .chart-card,
+      .table-card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+      }
+
+      .kpi-value {
+        color: #000 !important;
+      }
+
+      canvas {
+        max-height: 200px;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════
+       ★★★ MEDIA QUERIES RESPONSIVE (MÓVIL / TABLET) ★★★
+       ══════════════════════════════════════════════════ */
+    @media (max-width: 1100px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .charts-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-wrapper {
+        padding: 16px 20px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .header-meta {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .onedrive-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .onedrive-badge {
+        margin-left: 0;
+        margin-top: 8px;
+      }
+
+      .kpi-grid {
+        gap: 12px;
+      }
+
+      .kpi-card {
+        padding: 18px;
+      }
+
+      .chart-container {
+        height: 280px !important;
+      }
+
+      .chart-card {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .page-wrapper {
+        padding: 12px 14px;
+      }
+
+      .brand-text h1 {
+        font-size: 1.1rem;
+      }
+
+      .brand-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi-card {
+        padding: 16px;
+      }
+
+      .btn-download span.dl-icon {
+        margin-right: 0;
+      }
+
+      .btn-download {
+        font-size: 0.7rem;
+        padding: 6px 12px;
+      }
+
+      .risk-panel {
+        padding: 20px 16px;
+        border-radius: 14px;
+      }
+
+      .risk-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+
+      .risk-badge {
+        margin-left: 0;
+      }
+
+      .footer {
+        flex-direction: column;
+        text-align: center;
+        justify-content: center;
+      }
+
+      .kpi-tooltip {
+        width: 200px;
+        left: auto;
+        right: 0;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="risk-overlay" id="riskOverlay">
+    <div class="risk-panel">
+      <div class="risk-panel-header">
+        <div class="risk-panel-title">🚨 Alerta de Riesgo Ejecutivo</div>
+        <button class="risk-close" onclick="closeRisk()">×</button>
+      </div>
+      <div id="riskList"></div>
+      <div class="risk-footer-note">Unidades con avance &lt; 70% al cierre del período. Requieren atención inmediata.
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="page-wrapper">
+
+    <div class="sticky-top">
+
+      <header class="header">
+        <div class="header-brand">
+          <div class="brand-icon">🐾</div>
+          <div class="brand-text">
+            <h1>Soluciones Veterinarias SAC</h1>
+            <p>Dashboard Ejecutivo de Ventas — Seguimiento de Avance</p>
+          </div>
+        </div>
+        <div class="header-meta">
+          <div class="period-badge">Período: <span>Enero 2026</span></div>
+          <div class="update-badge">
+            <div class="update-dot"></div>
+            Última actualización: <strong id="lastUpdate">—</strong>
+          </div>
+
+          <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar modo claro/oscuro">
+            <span class="toggle-icon" id="themeIcon">🌙</span>
+            <div class="toggle-track" id="toggleTrack">
+              <div class="toggle-knob"></div>
+            </div>
+            <span id="themeLabel">Oscuro</span>
+          </div>
+
+          <button class="btn-download" id="btnDownload" onclick="downloadData()" title="Descargar datos de ventas">
+            <span class="dl-icon">⬇️</span> <span class="btn-text">Descargar Datos</span>
+          </button>
+
+          <button class="btn-pdf" onclick="exportPDF()" title="Exportar / Imprimir como PDF">
+            🖨️ PDF
+          </button>
+
+          <button class="btn-fullscreen" id="btnFullscreen" onclick="toggleFullscreen()"
+            title="Modo presentación pantalla completa">
+            ⛶ Presentación
+          </button>
+        </div>
+      </header>
+
+      <div class="onedrive-banner">
+        <span class="od-icon">☁️</span>
+        <span>Este dashboard está preparado para conectarse automáticamente con tu archivo en <strong>OneDrive</strong>.
+          Los datos se actualizarán en tiempo real cuando se active la integración.</span>
+        <span class="onedrive-badge">⚡ Integración lista — Fase 2</span>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card blue fade-up">
+          <div class="kpi-card-header">
+            <span class="kpi-label">Venta Total Acumulada</span>
+            <div class="kpi-icon blue">💰</div>
+          </div>
+          <div class="kpi-value" id="kpi-venta">0</div>
+          <div class="kpi-subtitle">
+            Objetivo: <span class="kpi-sub-val neg">S/ 2,096,552</span>
+          </div>
+        </div>
+        <div class="kpi-card green fade-up">
+          <div class="kpi-card-header">
+            <span class="kpi-label">% Cumplimiento</span>
+            <div class="kpi-icon green">🎯</div>
+          </div>
+          <div class="kpi-value" id="kpi-cump">0%</div>
+          <div class="kpi-subtitle">
+            Gap: <span class="kpi-sub-val neg">-S/ 57,504</span>
+          </div>
+        </div>
+        <div class="kpi-card yellow fade-up">
+          <div class="kpi-card-header">
+            <span class="kpi-label">% Crecimiento YoY</span>
+            <div class="kpi-icon yellow">📈</div>
+          </div>
+          <div class="kpi-value" id="kpi-yoy">0%</div>
+          <div class="kpi-subtitle">
+            Vs <span class="kpi-sub-val neu">Enero 2025</span>
+          </div>
+        </div>
+        <div class="kpi-card purple fade-up">
+          <div class="kpi-card-header">
+            <span class="kpi-label">Proyección Cierre</span>
+            <div class="kpi-icon purple">🔮</div>
+          </div>
+          <div class="kpi-value" id="kpi-proj">0</div>
+          <div class="kpi-subtitle">
+            Tendencia: <span class="kpi-sub-val neu">Actual</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="period-row" id="periodRow">
+      <span class="period-row-label">Período:</span>
+      <button class="period-tab active" onclick="setPeriod(this,'Enero 2026')">Ene 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Febrero 2026')">Feb 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Marzo 2026')">Mar 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Abril 2026')">Abr 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Mayo 2026')">May 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Junio 2026')">Jun 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Julio 2026')">Jul 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Agosto 2026')">Ago 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Septiembre 2026')">Sep 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Octubre 2026')">Oct 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Noviembre 2026')">Nov 2026</button>
+      <button class="period-tab" onclick="setPeriod(this,'Diciembre 2026')">Dic 2026</button>
+    </div>
+
+    <div class="charts-row">
+
+      <div class="chart-card">
+        <div class="chart-card-title">% Avance vs. Presupuesto por Unidad</div>
+        <div class="chart-card-sub">Semáforo:  <span style="color:#22c55e">● ≥90%</span> <span style="color:#eab308">●
+            60-89%</span> <span style="color:#ef4444">● &lt;60%</span></div>
+        <div class="chart-container">
+          <canvas id="avanceChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-title">Composición de Venta Actual</div>
+        <div class="chart-card-sub">% participación por Unidad de Negocio</div>
+        <div class="chart-container" style="height:clamp(160px,18vh,220px)">
+          <canvas id="donutChart"></canvas>
+        </div>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+
+    </div>
+
+    <div class="charts-bottom">
+      <div class="chart-card">
+        <div class="chart-card-title">Crecimiento YoY (%) por Unidad de Negocio</div>
+        <div class="chart-card-sub">Variación porcentual respecto al mismo período del año anterior (Enero 2025)</div>
+        <div class="chart-container">
+          <canvas id="yoyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-title">Avance de Ventas por Unidad de Negocio</p>
+    <div class="table-card">
+      <table class="data-table" id="table-unidad">
+        <thead>
+          <tr id="thead-unidad">
+            <th class="sortable" onclick="sortTable('table-unidad',0)" data-col="0">Unidad <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-unidad',1)" data-col="1">Venta LY <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-unidad',2)" data-col="2">Venta Act. <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-unidad',3)" data-col="3">Presupuesto <span
+                class="sort-icon">▲▼</span></th>
+            <th>VQ. Venta</th>
+            <th style="min-width:200px">Avance %</th>
+            <th class="sortable" onclick="sortTable('table-unidad',6)" data-col="6">Gap S/USD <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-unidad',7)" data-col="7">% Crec. YoY <span
+                class="sort-icon">▲▼</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-unidad"></tbody>
+      </table>
+    </div>
+
+    <p class="section-title">Avance de Ventas por Línea de Negocio</p>
+    <div class="table-card">
+      <table class="data-table" id="table-linea">
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortTable('table-linea',0)" data-col="0">Línea <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-linea',1)" data-col="1">Sub-línea <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-linea',2)" data-col="2">Venta LY <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-linea',3)" data-col="3">Venta Act. <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-linea',4)" data-col="4">Presupuesto <span
+                class="sort-icon">▲▼</span></th>
+            <th>VQ. Venta</th>
+            <th style="min-width:200px">Avance %</th>
+            <th class="sortable" onclick="sortTable('table-linea',7)" data-col="7">Gap S/USD <span
+                class="sort-icon">▲▼</span></th>
+            <th class="sortable" onclick="sortTable('table-linea',8)" data-col="8">% Crec. YoY <span
+                class="sort-icon">▲▼</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-linea"></tbody>
+      </table>
+    </div>
+
+    <footer class="footer">
+      <span>© 2026 Soluciones Veterinarias SAC — Todos los derechos reservados</span>
+      <div class="footer-od">
+        ☁️ Datos: <a href="#" id="odLink">OneDrive — Pendiente conexión</a>
+        &nbsp;·&nbsp; Desarrollado con Dashboard Ejecutivo Web v1.0
+      </div>
+    </footer>
+
+  </div>
+  <script>
+    /* 🚨 DETECTOR DE HARDWARE PARA DESACTIVAR STICKY EN MÓVILES 🚨 */
+    function detectDeviceType() {
+      const ua = navigator.userAgent;
+      const isTablet = /(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua);
+      const isMobile = /Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua);
+
+      if (isTablet) {
+        document.body.classList.add('device-is-tablet');
+      } else if (isMobile) {
+        document.body.classList.add('device-is-mobile');
+      } else {
+        document.body.classList.add('device-is-desktop');
+      }
+    }
+
+    /* ─── THEME TOGGLE ─── */
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light-mode');
+      const track = document.getElementById('toggleTrack');
+      const icon = document.getElementById('themeIcon');
+      const label = document.getElementById('themeLabel');
+      track.classList.toggle('on', isLight);
+      icon.textContent = isLight ? '☀️' : '🌙';
+      label.textContent = isLight ? 'Claro' : 'Oscuro';
+      localStorage.setItem('dashTheme', isLight ? 'light' : 'dark');
+    }
+
+    function applyStoredTheme() {
+      const saved = localStorage.getItem('dashTheme');
+      if (saved === 'light') {
+        document.body.classList.add('light-mode');
+        document.getElementById('toggleTrack').classList.add('on');
+        document.getElementById('themeIcon').textContent = '☀️';
+        document.getElementById('themeLabel').textContent = 'Claro';
+      }
+    }
+
+    /* ─── DOWNLOAD DATA ─── */
+    function downloadData() {
+      const btn = document.getElementById('btnDownload');
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '⏳ Preparando...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const json = JSON.stringify(SALES_DATA, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const fecha = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `ventas_${fecha}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        btn.innerHTML = '<span class="dl-icon">✅</span> Descargado';
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+        }, 2500);
+      }, 300);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       ▶ SALES_DATA (Datos completos originales)
+       ══════════════════════════════════════════════════════════════════ */
+    const SALES_DATA = {
+      kpis: {
+        ventaTotal: 2039048,
+        objetivo: 2096552,
+        cumplimiento: 97,
+        gap: -57504,
+        yoy: 8,
+        proyeccion: 2039048,
+        periodo: "Enero 2026",
+        lastUpdate: "16 Mar 2026, 09:10"
+      },
+      unidades: [
+        { nombre: "Nutricional", ventaLY: 1659520, ventaAct: 1714277, presup: 1790109, vqVenta: 65577, avance: 96, gapUSD: -75832, yoy: 3 },
+        { nombre: "Veterinario", ventaLY: 118626, ventaAct: 140325, presup: 139286, vqVenta: 65577, avance: 101, gapUSD: 1039, yoy: 18 },
+        { nombre: "Bioseguridad", ventaLY: null, ventaAct: 126707, presup: 65577, vqVenta: null, avance: 193, gapUSD: 61130, yoy: 0 },
+        { nombre: "Sanidad", ventaLY: 49360, ventaAct: 24114, presup: 34913, vqVenta: null, avance: 69, gapUSD: -10799, yoy: -51 },
+        { nombre: "Inseminación", ventaLY: 49360, ventaAct: 24114, presup: 34913, vqVenta: null, avance: 69, gapUSD: -10799, yoy: -51 },
+        { nombre: "Materiales", ventaLY: 49360, ventaAct: 24114, presup: 34913, vqVenta: null, avance: 69, gapUSD: -10799, yoy: -51 },
+        { nombre: "Equipos", ventaLY: 11922, ventaAct: 33624, presup: 66667, vqVenta: null, avance: 50, gapUSD: -33043, yoy: 182 },
+        { nombre: "PETS", ventaLY: null, ventaAct: 11922, presup: 66667, vqVenta: null, avance: 18, gapUSD: -54745, yoy: 0 },
+      ],
+      unidadTotal: { ventaLY: 1938148, ventaAct: 2099199, presup: 2233045, vqVenta: 131154, avance: 94, gapUSD: -133847, yoy: 8 },
+      lineas: [
+        { linea: "Productor", sublinea: "Aves", ventaLY: 218543, ventaAct: 267463, presup: 273377, vqVenta: 65577, avance: 98, gapUSD: -5915, yoy: 22 },
+        { linea: "", sublinea: "Cerdos", ventaLY: 390878, ventaAct: 325861, presup: 274476, vqVenta: 65577, avance: 119, gapUSD: -51385, yoy: -17 },
+        { linea: "", sublinea: "Aves & Cerdos", ventaLY: 609422, ventaAct: 593324, presup: 547853, vqVenta: null, avance: 108, gapUSD: 45470, yoy: -3 },
+        { linea: "Ganadería", sublinea: "Ganadería", ventaLY: 49360, ventaAct: 24114, presup: 34913, vqVenta: null, avance: 69, gapUSD: -10799, yoy: -51 },
+        { linea: "Acuacultura", sublinea: "Acuacultura", ventaLY: 49360, ventaAct: 24114, presup: 34913, vqVenta: null, avance: 69, gapUSD: -10799, yoy: -51 },
+        { linea: "Redondos", sublinea: "Redondos", ventaLY: 49360, ventaAct: 24114, presup: 34913, vqVenta: null, avance: 69, gapUSD: -10799, yoy: -51 },
+        { linea: "Equipos", sublinea: "Otros", ventaLY: 11922, ventaAct: 33624, presup: 66667, vqVenta: null, avance: 50, gapUSD: -33043, yoy: 182 },
+        { linea: "", sublinea: "Redondos", ventaLY: null, ventaAct: 11922, presup: 66667, vqVenta: null, avance: 18, gapUSD: -54745, yoy: 0 },
+        { linea: "PETS", sublinea: "PETS", ventaLY: null, ventaAct: 11922, presup: 66667, vqVenta: null, avance: 18, gapUSD: -54745, yoy: 0 },
+      ],
+      lineaTotal: { ventaLY: 1378845, ventaAct: 1316459, presup: 1400446, vqVenta: 131154, avance: 94, gapUSD: -83988, yoy: -5 }
+    };
+
+    /* ─── HELPERS ─── */
+    const fmt = v => v == null ? '—' : '$' + v.toLocaleString('es-PE');
+    const fmtN = v => v == null ? '—' : v.toLocaleString('es-PE');
+    const clr = pct => pct >= 90 ? 'green' : pct >= 60 ? 'yellow' : 'red';
+    const yoyBadge = y => {
+      if (y > 0) return `<span class="yoy-badge pos">▲ ${y}%</span>`;
+      if (y < 0) return `<span class="yoy-badge neg">▼ ${Math.abs(y)}%</span>`;
+      return `<span class="yoy-badge neu">— ${y}%</span>`;
+    };
+    const gapCell = g => g >= 0
+      ? `<span class="gap-pos">+${fmtN(g)}</span>`
+      : `<span class="gap-neg">-${fmtN(Math.abs(g))}</span>`;
+    const progressCell = (pct) => {
+      const c = clr(pct);
+      const w = Math.min(pct, 100);
+      return `<div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill ${c}" style="width:0%" data-w="${w}%"></div></div>
+    <span class="pct-label ${c}">${pct}%</span>
+  </div>`;
+    };
+
+    /* ─── COUNTER ANIMATION ─── */
+    function animateCounter(el, target, prefix = '', suffix = '', duration = 1600) {
+      let start = null;
+      const step = ts => {
+        if (!start) start = ts;
+        const prog = Math.min((ts - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - prog, 3);
+        const val = Math.round(ease * target);
+        el.textContent = prefix + val.toLocaleString('es-PE') + suffix;
+        if (prog < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    /* ─── INIT KPIs ─── */
+    function initKPIs() {
+      const d = SALES_DATA.kpis;
+      document.getElementById('lastUpdate').textContent = d.lastUpdate;
+      animateCounter(document.getElementById('kpi-venta'), d.ventaTotal, 'S/ ');
+      animateCounter(document.getElementById('kpi-cump'), d.cumplimiento, '', '%', 1400);
+      animateCounter(document.getElementById('kpi-yoy'), d.yoy, '', '%', 1200);
+      animateCounter(document.getElementById('kpi-proj'), d.proyeccion, 'S/ ');
+    }
+
+    /* ─── TABLE: UNIDAD ─── */
+    function buildTableUnidad() {
+      const tbody = document.getElementById('tbody-unidad');
+      SALES_DATA.unidades.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+      <td>${r.nombre}</td>
+      <td>${fmtN(r.ventaLY)}</td>
+      <td><strong>${fmtN(r.ventaAct)}</strong></td>
+      <td>${fmtN(r.presup)}</td>
+      <td>${fmtN(r.vqVenta)}</td>
+      <td>${progressCell(r.avance)}</td>
+      <td>${gapCell(r.gapUSD)}</td>
+      <td>${yoyBadge(r.yoy)}</td>`;
+        tbody.appendChild(tr);
+      });
+      // Total
+      const t = SALES_DATA.unidadTotal;
+      const trT = document.createElement('tr');
+      trT.className = 'total-row';
+      trT.innerHTML = `
+    <td>Total General</td>
+    <td>${fmtN(t.ventaLY)}</td>
+    <td><strong>${fmtN(t.ventaAct)}</strong></td>
+    <td>${fmtN(t.presup)}</td>
+    <td>${fmtN(t.vqVenta)}</td>
+    <td>${progressCell(t.avance)}</td>
+    <td>${gapCell(t.gapUSD)}</td>
+    <td>${yoyBadge(t.yoy)}</td>`;
+      tbody.appendChild(trT);
+    }
+
+    /* ─── TABLE: LÍNEA ─── */
+    function buildTableLinea() {
+      const tbody = document.getElementById('tbody-linea');
+      SALES_DATA.lineas.forEach(r => {
+        const tr = document.createElement('tr');
+        const isSubcat = r.linea === '';
+        if (isSubcat) tr.classList.add('subcat');
+        tr.innerHTML = `
+      <td class="${!isSubcat ? 'group-label' : ''}">${r.linea || ''}</td>
+      <td>${r.sublinea}</td>
+      <td>${fmtN(r.ventaLY)}</td>
+      <td><strong>${fmtN(r.ventaAct)}</strong></td>
+      <td>${fmtN(r.presup)}</td>
+      <td>${fmtN(r.vqVenta)}</td>
+      <td>${progressCell(r.avance)}</td>
+      <td>${gapCell(r.gapUSD)}</td>
+      <td>${yoyBadge(r.yoy)}</td>`;
+        tbody.appendChild(tr);
+      });
+      const t = SALES_DATA.lineaTotal;
+      const trT = document.createElement('tr');
+      trT.className = 'total-row';
+      trT.innerHTML = `
+    <td colspan="2">Total General</td>
+    <td>${fmtN(t.ventaLY)}</td>
+    <td><strong>${fmtN(t.ventaAct)}</strong></td>
+    <td>${fmtN(t.presup)}</td>
+    <td>${fmtN(t.vqVenta)}</td>
+    <td>${progressCell(t.avance)}</td>
+    <td>${gapCell(t.gapUSD)}</td>
+    <td>${yoyBadge(t.yoy)}</td>`;
+      tbody.appendChild(trT);
+    }
+
+    /* ─── ANIMATE PROGRESS BARS ─── */
+    function animateBars() {
+      setTimeout(() => {
+        document.querySelectorAll('.progress-fill').forEach(el => {
+          el.style.width = el.dataset.w;
+        });
+      }, 400);
+    }
+
+    /* ─── CHART: % AVANCE HORIZONTAL ─── */
+    function buildBarChart() {
+      const labels = SALES_DATA.unidades.map(u => u.nombre);
+      const values = SALES_DATA.unidades.map(u => u.avance);
+      const bgColors = values.map(v =>
+        v >= 90 ? 'rgba(34,197,94,0.72)' : v >= 60 ? 'rgba(234,179,8,0.72)' : 'rgba(239,68,68,0.72)'
+      );
+      const bdColors = values.map(v =>
+        v >= 90 ? '#22c55e' : v >= 60 ? '#eab308' : '#ef4444'
+      );
+      const ctx = document.getElementById('avanceChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: '% Avance',
+            data: values,
+            backgroundColor: bgColors,
+            borderColor: bdColors,
+            borderWidth: 1.5,
+            borderRadius: 6,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0d1520',
+              borderColor: 'rgba(56,189,248,0.3)',
+              borderWidth: 1,
+              titleColor: '#f0f6ff',
+              bodyColor: '#8ba3be',
+              callbacks: { label: c => ' Avance: ' + c.parsed.x + '%' }
+            }
+          },
+          scales: {
+            x: {
+              min: 0,
+              max: Math.max(...values, 110),
+              ticks: { color: '#8ba3be', font: { size: 11 }, callback: v => v + '%' },
+              grid: { color: 'rgba(255,255,255,0.06)' }
+            },
+            y: {
+              ticks: { color: '#c5d9ef', font: { size: 12, weight: '500' } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    /* ─── CHART: YoY GROWTH ─── */
+    function buildYoYChart() {
+      const labels = SALES_DATA.unidades.map(u => u.nombre);
+      const values = SALES_DATA.unidades.map(u => u.yoy);
+      const bgColors = values.map(v => v >= 0 ? 'rgba(52,211,153,0.70)' : 'rgba(248,113,113,0.70)');
+      const bdColors = values.map(v => v >= 0 ? '#34d399' : '#f87171');
+      const ctx = document.getElementById('yoyChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: '% YoY',
+            data: values,
+            backgroundColor: bgColors,
+            borderColor: bdColors,
+            borderWidth: 1.5,
+            borderRadius: 6,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0d1520',
+              borderColor: 'rgba(56,189,248,0.3)',
+              borderWidth: 1,
+              titleColor: '#f0f6ff',
+              bodyColor: '#8ba3be',
+              callbacks: { label: c => ' YoY: ' + c.parsed.y + '%' }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#8ba3be', font: { size: 11 } },
+              grid: { color: 'rgba(255,255,255,0.04)' }
+            },
+            y: {
+              ticks: { color: '#8ba3be', font: { size: 11 }, callback: v => v + '%' },
+              grid: { color: 'rgba(255,255,255,0.06)' }
+            }
+          }
+        }
+      });
+    }
+
+    /* ─── CHART.JS: DONUT ─── */
+    function buildDonutChart() {
+      const palette = ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#fb923c', '#e879f9', '#4ade80'];
+      const labels = SALES_DATA.unidades.map(u => u.nombre);
+      const values = SALES_DATA.unidades.map(u => u.ventaAct || 0);
+      const total = values.reduce((a, b) => a + b, 0);
+      const ctx = document.getElementById('donutChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: palette.map(c => c + 'cc'),
+            borderColor: palette,
+            borderWidth: 2,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          cutout: '68%',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0d1520',
+              borderColor: 'rgba(56,189,248,0.3)',
+              borderWidth: 1,
+              titleColor: '#f0f6ff',
+              bodyColor: '#8ba3be',
+              callbacks: {
+                label: ctx => ' S/ ' + ctx.parsed.toLocaleString('es-PE')
+              }
+            }
+          }
+        }
+      });
+      // Custom legend
+      const leg = document.getElementById('donutLegend');
+      labels.forEach((lbl, i) => {
+        const pct = ((values[i] / total) * 100).toFixed(1);
+        const div = document.createElement('div');
+        div.className = 'legend-item';
+        div.innerHTML = `
+      <div class="legend-dot-label">
+        <div class="legend-dot" style="background:${palette[i]}"></div>
+        <span>${lbl}</span>
+      </div>
+      <span class="legend-pct">${pct}%</span>`;
+        leg.appendChild(div);
+      });
+    }
+
+    /* ─── HELPER: TOAST ─── */
+    let _toastTimer;
+    function showToast(msg, ms = 3500) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+    }
+
+    /* ─── FEATURE 1: PDF EXPORT ─── */
+    async function exportPDF() {
+      const btn = document.querySelector('.btn-pdf');
+      btn.textContent = '⏳ Generando PDF...';
+      btn.disabled = true;
+      try {
+        const el = document.querySelector('.page-wrapper');
+        const canvas = await html2canvas(el, {
+          scale: 1.5,
+          useCORS: true,
+          backgroundColor: document.body.classList.contains('light-mode') ? '#f0f4f8' : '#080d14'
+        });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const pW = pdf.internal.pageSize.getWidth();
+        const pH = pdf.internal.pageSize.getHeight();
+        const ratio = Math.min(pW / canvas.width, pH / canvas.height);
+        const imgW = canvas.width * ratio;
+        const imgH = canvas.height * ratio;
+        const x = (pW - imgW) / 2;
+        const y = (pH - imgH) / 2;
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, imgW, imgH);
+        const fecha = new Date().toISOString().slice(0, 10);
+        pdf.save(`Reporte_Ventas_${fecha}.pdf`);
+        showToast('✅ PDF generado correctamente');
+      } catch (e) {
+        showToast('⚠️ Error al generar el PDF. Revisa tu conexión.');
+      }
+      btn.textContent = '🖨️ PDF';
+      btn.disabled = false;
+    }
+
+    /* ─── FEATURE 2: FULLSCREEN ─── */
+    function toggleFullscreen() {
+      if (document.fullscreenEnabled && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen()
+          .then(() => showToast('⛶ Modo presentación activado — presiona Esc o F11 para salir'))
+          .catch(() => showToast('⎨ Presiona F11 en tu teclado para pantalla completa'));
+      } else if (document.fullscreenElement) {
+        document.exitFullscreen();
+        showToast('✖️ Pantalla completa desactivada');
+      } else {
+        showToast('⎨️ Presiona F11 en tu teclado para activar pantalla completa');
+      }
+    }
+    document.addEventListener('fullscreenchange', () => {
+      const btn = document.getElementById('btnFullscreen');
+      if (!document.fullscreenElement) btn.innerHTML = '⛶ Presentación';
+      else btn.innerHTML = '✖️ Salir';
+    });
+
+    /* ─── FEATURE 3: PERIOD SELECTOR ─── */
+    function setPeriod(btn, period) {
+      document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      const badge = document.querySelector('.period-badge span');
+      if (badge) badge.textContent = period;
+    }
+
+    /* ─── FEATURE 4: RISK ALERT PANEL ─── */
+    function showRisk() {
+      const list = document.getElementById('riskList');
+      const items = SALES_DATA.unidades.filter(u => u.avance < 70);
+      if (items.length === 0) return;
+      list.innerHTML = '';
+      items.forEach(u => {
+        const gap = u.gapUSD < 0 ? `-S/ ${Math.abs(u.gapUSD).toLocaleString('es-PE')}` : `+S/ ${u.gapUSD.toLocaleString('es-PE')}`;
+        const div = document.createElement('div');
+        div.className = 'risk-item';
+        div.innerHTML = `
+          <div>
+            <div class="risk-item-name">${u.nombre}</div>
+            <div class="risk-item-meta">Gap: ${gap} &nbsp;·&nbsp; YoY: ${u.yoy}%</div>
+          </div>
+          <div class="risk-badge">${u.avance}%</div>`;
+        list.appendChild(div);
+      });
+      document.getElementById('riskOverlay').classList.add('show');
+    }
+    function closeRisk() {
+      document.getElementById('riskOverlay').classList.remove('show');
+    }
+    document.getElementById('riskOverlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeRisk();
+    });
+
+    /* ─── FEATURE 5: SORTABLE TABLE COLUMNS ─── */
+    const _sortState = {};
+    function sortTable(tableId, colIdx) {
+      const table = document.getElementById(tableId);
+      const tbody = table.querySelector('tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr:not(.total-row)'));
+      const totRow = tbody.querySelector('tr.total-row');
+      const key = tableId + '_' + colIdx;
+      const asc = !_sortState[key];
+      _sortState[key] = asc;
+      table.querySelectorAll('thead th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+      });
+      const ths = table.querySelectorAll('thead th');
+      ths[colIdx].classList.add(asc ? 'sort-asc' : 'sort-desc');
+      ths[colIdx].querySelector('.sort-icon').textContent = asc ? '▲' : '▼';
+      rows.sort((a, b) => {
+        const aText = a.cells[colIdx]?.textContent.trim() ?? '';
+        const bText = b.cells[colIdx]?.textContent.trim() ?? '';
+        const aNum = parseFloat(aText.replace(/[^0-9.\-]/g, ''));
+        const bNum = parseFloat(bText.replace(/[^0-9.\-]/g, ''));
+        if (!isNaN(aNum) && !isNaN(bNum)) return asc ? aNum - bNum : bNum - aNum;
+        return asc ? aText.localeCompare(bText, 'es') : bText.localeCompare(aText, 'es');
+      });
+      rows.forEach(r => tbody.appendChild(r));
+      if (totRow) tbody.appendChild(totRow);
+    }
+
+    /* ─── FEATURE 6: EXECUTIVE KPI TOOLTIPS ─── */
+    function injectKPITooltips() {
+      const d = SALES_DATA;
+      const top2Risk = [...d.unidades].sort((a, b) => a.avance - b.avance).slice(0, 2);
+      const top2YoY = [...d.unidades].sort((a, b) => b.yoy - a.yoy).slice(0, 2);
+
+      const tooltips = [
+        `<strong>📊 Detalle Venta Total</strong>
+         <div class="kpi-tt-row"><span>Objetivo</span><span class="val">S/ ${d.kpis.objetivo.toLocaleString('es-PE')}</span></div>
+         <div class="kpi-tt-row"><span>Gap</span><span class="${d.kpis.gap < 0 ? 'neg' : 'pos'}">S/ ${d.kpis.gap.toLocaleString('es-PE')}</span></div>
+         <div class="kpi-tt-row"><span>Mayor unidad</span><span class="val">Nutricional</span></div>`,
+        `<strong>🎯 Detalle Cumplimiento</strong>
+         <div class="kpi-tt-row"><span>Unidades en riesgo</span><span class="neg">${d.unidades.filter(u => u.avance < 70).length}</span></div>
+         <div class="kpi-tt-row"><span>Peor avance: ${top2Risk[0]?.nombre}</span><span class="neg">${top2Risk[0]?.avance}%</span></div>
+         <div class="kpi-tt-row"><span>Mejor avance: Bioseguridad</span><span class="pos">193%</span></div>`,
+        `<strong>📈 Detalle Crecimiento YoY</strong>
+         <div class="kpi-tt-row"><span>Mayor crecimiento</span><span class="pos">${top2YoY[0]?.nombre} +${top2YoY[0]?.yoy}%</span></div>
+         <div class="kpi-tt-row"><span>2do.</span><span class="pos">${top2YoY[1]?.nombre} +${top2YoY[1]?.yoy}%</span></div>
+         <div class="kpi-tt-row"><span>Vs Enero 2025</span><span class="val">Referencia base</span></div>`,
+        `<strong>🔮 Detalle Proyección</strong>
+         <div class="kpi-tt-row"><span>Tendencia actual</span><span class="val">Lineal</span></div>
+         <div class="kpi-tt-row"><span>Margen objetivo</span><span class="neg">-S/ ${Math.abs(d.kpis.gap).toLocaleString('es-PE')}</span></div>
+         <div class="kpi-tt-row"><span>% proyectado</span><span class="val">${d.kpis.cumplimiento}%</span></div>`
+      ];
+
+      document.querySelectorAll('.kpi-card').forEach((card, i) => {
+        if (tooltips[i]) {
+          const tip = document.createElement('div');
+          tip.className = 'kpi-tooltip';
+          tip.innerHTML = tooltips[i];
+          card.appendChild(tip);
+        }
+      });
+    }
+
+    /* ─── BOOT ─── */
+    document.addEventListener('DOMContentLoaded', () => {
+      detectDeviceType(); // Se ejecuta primero para preparar la cabecera
+      applyStoredTheme();
+      initKPIs();
+      buildTableUnidad();
+      buildTableLinea();
+      animateBars();
+      buildBarChart();
+      buildDonutChart();
+      buildYoYChart();
+      injectKPITooltips();
+      setTimeout(showRisk, 1500);
+    });
+
+  </script>
+</body>
+
+</html>
