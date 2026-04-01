@@ -8,69 +8,137 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121e;color:#dde4f0;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
-#header{padding:9px 16px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:12px;flex-shrink:0}
-#header h1{font-size:15px;font-weight:600;color:#fff}
-#header .sub{font-size:10px;color:#5a6a8a;margin-top:1px}
-.tag{background:#162040;color:#4a90d9;font-size:10px;padding:2px 7px;border-radius:8px;margin-left:6px;font-weight:600;vertical-align:middle}
-#toolbar{padding:8px 14px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
-.btn{font-size:12px;padding:5px 12px;border:1px solid #263050;border-radius:5px;background:#131826;color:#b0c4de;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+
+/* HEADER */
+#header{padding:8px 16px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:12px;flex-shrink:0}
+#header h1{font-size:14px;font-weight:600;color:#fff}
+.sub{font-size:10px;color:#5a6a8a;margin-top:1px}
+.tag{background:#162040;color:#4a90d9;font-size:10px;padding:2px 7px;border-radius:8px;margin-left:5px;font-weight:600;vertical-align:middle}
+
+/* TOOLBAR */
+#toolbar{padding:7px 14px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:7px;flex-shrink:0;flex-wrap:wrap}
+.btn{font-size:11px;padding:5px 11px;border:1px solid #263050;border-radius:5px;background:#131826;color:#b0c4de;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
 .btn:hover{background:#1a2540;border-color:#3a5a88}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .btn.go{background:#1a4a9a;color:#fff;border-color:#2a65cc;font-weight:600}
-.btn.go:hover{background:#1e55b5}
+.btn.go:hover:not(:disabled){background:#1e55b5}
 .btn.exp{background:#1a4a2a;color:#6dffaa;border-color:#2a7a44}
-.btn.exp:hover{background:#1e5a32}
-#upload-zone{border:1px dashed #263a60;border-radius:5px;padding:5px 12px;font-size:12px;color:#5a80aa;cursor:pointer;background:#0d1220;transition:all .15s}
+.btn.exp:hover:not(:disabled){background:#1e5a32}
+.btn.danger{background:#3a1a1a;color:#ff8a8a;border-color:#6a2a2a}
+.btn.danger:hover:not(:disabled){background:#4a1a1a}
+#upload-zone{border:1px dashed #263a60;border-radius:5px;padding:5px 11px;font-size:11px;color:#5a80aa;cursor:pointer;background:#0d1220;transition:all .15s}
 #upload-zone:hover{border-color:#4a72a0;color:#8aacd0}
 #file-input{display:none}
-.sep{width:1px;height:22px;background:#1e2540;flex-shrink:0}
-#algo-bar{padding:6px 14px;background:#0d1020;border-bottom:1px solid #1a2035;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap}
-.algo-btn{font-size:11px;padding:4px 11px;border:1px solid #263050;border-radius:14px;background:#131826;color:#7a94b8;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.sep{width:1px;height:20px;background:#1e2540;flex-shrink:0}
+
+/* ALGO BAR */
+#algo-bar{padding:5px 14px;background:#0d1020;border-bottom:1px solid #1a2035;display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
+.algo-btn{font-size:11px;padding:3px 10px;border:1px solid #263050;border-radius:12px;background:#131826;color:#7a94b8;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
 .algo-btn:hover{background:#1a2540;color:#aac4e0}
 .algo-btn.selected{background:#1a3a7a;color:#6aaeff;border-color:#2a5acc;font-weight:600}
-.algo-btn.best{border-color:#2a7a44 !important;color:#5aff8a !important}
-.algo-label{font-size:10px;color:#3a5070;margin-right:4px;white-space:nowrap}
+.algo-btn.best{border-color:#2a7a44!important;color:#5aff8a!important}
+.algo-label{font-size:10px;color:#3a5070;margin-right:3px;white-space:nowrap}
+
+/* PROGRESS / STATUS */
 #progress{height:2px;background:#0d1020;flex-shrink:0}
 #progress-bar{height:100%;background:linear-gradient(90deg,#2a7aff,#ff6b35);width:0%;transition:width .3s}
-#status-bar{padding:4px 16px;background:#090910;border-bottom:1px solid #141820;font-size:11px;color:#4a6a88;display:flex;align-items:center;gap:7px;flex-shrink:0}
+#status-bar{padding:4px 16px;background:#090910;border-bottom:1px solid #141820;font-size:11px;color:#4a6a88;display:flex;align-items:center;gap:7px;flex-shrink:0;min-height:24px}
 .dot{width:6px;height:6px;border-radius:50%;background:#2a3a50;flex-shrink:0}
-.dot.ok{background:#22aa55}
-.dot.run{background:#ffaa22;animation:blink .7s infinite}
-.dot.warn{background:#ff6022}
+.dot.ok{background:#22aa55}.dot.run{background:#ffaa22;animation:blink .7s infinite}.dot.warn{background:#ff6022}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+
+/* MAIN */
 #main{display:flex;flex:1;overflow:hidden}
 #map{flex:1;z-index:1}
-#sidebar{width:275px;background:#0a0a16;border-left:1px solid #141820;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
-#sb-top{padding:9px 13px;border-bottom:1px solid #141820;display:flex;align-items:center;justify-content:space-between}
-#sb-top .title{font-size:12px;font-weight:600;color:#aabfd8}
-.cnt{background:#162040;color:#4a90d9;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600}
-#stats{padding:9px 11px;border-bottom:1px solid #141820;display:none;grid-template-columns:1fr 1fr;gap:6px}
-.sc{background:#0d1626;border:1px solid #1a2a40;border-radius:5px;padding:6px 9px}
-.sc-l{font-size:10px;color:#3a5a78;margin-bottom:2px}
-.sc-v{font-size:16px;font-weight:700;color:#b0d0ff}
-.sc-v.sm{font-size:10px;padding-top:3px;line-height:1.5;color:#7aaad8}
-#compare-panel{padding:8px 11px;border-bottom:1px solid #141820;display:none}
-.cp-title{font-size:10px;color:#3a5a78;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.cp-row{display:flex;align-items:center;gap:6px;padding:4px 6px;border-bottom:1px solid #0e1622;cursor:pointer;transition:background .1s;border-radius:4px}
+
+/* SIDEBAR */
+#sidebar{width:290px;background:#0a0a16;border-left:1px solid #141820;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+
+/* CONFIG PANEL */
+#config-panel{padding:8px 11px;border-bottom:1px solid #141820;flex-shrink:0}
+.cfg-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.cfg-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.cfg-label{font-size:11px;color:#6a8aaa;width:90px;flex-shrink:0}
+select{font-size:11px;padding:3px 7px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;flex:1;cursor:pointer}
+select:focus{outline:none;border-color:#2a5acc}
+.start-info{font-size:10px;color:#4a6a44;background:#0d1e10;border:1px solid #1a3a1a;border-radius:4px;padding:4px 8px;margin-top:2px;line-height:1.5}
+.start-info.active{color:#6aff8a;border-color:#2a6a2a}
+.tip{font-size:10px;color:#3a5a70;font-style:italic;margin-top:1px}
+
+/* PRIORITY LEGEND */
+#priority-legend{padding:7px 11px;border-bottom:1px solid #141820;flex-shrink:0}
+.pleg-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.pleg-row{display:flex;align-items:center;gap:7px;margin-bottom:3px;font-size:11px;color:#8aacc0}
+.pleg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.3)}
+.pleg-weight{margin-left:auto;font-size:10px;color:#4a6a80}
+
+/* STATS */
+#stats{padding:8px 11px;border-bottom:1px solid #141820;display:none;grid-template-columns:1fr 1fr 1fr;gap:5px}
+.sc{background:#0d1626;border:1px solid #1a2a40;border-radius:5px;padding:5px 8px}
+.sc-l{font-size:9px;color:#3a5a78;margin-bottom:2px}
+.sc-v{font-size:14px;font-weight:700;color:#b0d0ff}
+.sc-v.sm{font-size:10px;padding-top:2px;line-height:1.5;color:#7aaad8}
+.sc-full{grid-column:1/-1}
+
+/* TIME BREAKDOWN */
+#time-detail{padding:6px 11px;border-bottom:1px solid #141820;display:none;font-size:10px;color:#4a6a80;line-height:1.8}
+#time-detail strong{color:#7aaad8}
+
+/* COMPARE */
+#compare-panel{padding:7px 11px;border-bottom:1px solid #141820;display:none;flex-shrink:0}
+.cp-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cp-row{display:flex;align-items:center;gap:6px;padding:3px 5px;border-bottom:1px solid #0e1622;cursor:pointer;transition:background .1s;border-radius:3px}
 .cp-row:hover{background:#0d1830}
 .cp-row.cp-active{background:#0d1e40}
-.cp-algo-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .cp-name{font-size:11px;font-weight:600;color:#8aacd0;flex:1}
-.cp-dist{font-size:11px;color:#5a8ab0;text-align:right;min-width:55px}
-.cp-badge{font-size:9px;padding:1px 5px;border-radius:8px;background:#1a3a1a;color:#5aff8a;font-weight:600}
+.cp-dist{font-size:11px;color:#5a8ab0;min-width:52px;text-align:right}
+.cp-badge{font-size:9px;padding:1px 5px;border-radius:6px;background:#1a3a1a;color:#5aff8a;font-weight:600}
+
+/* ROUTE LIST */
 #route-list{flex:1;overflow-y:auto;padding:4px 0}
 #route-list::-webkit-scrollbar{width:3px}
 #route-list::-webkit-scrollbar-track{background:#0a0a16}
 #route-list::-webkit-scrollbar-thumb{background:#1e2a40;border-radius:2px}
-.ri{padding:7px 13px;border-bottom:1px solid #0e121e;cursor:pointer;display:flex;align-items:flex-start;gap:8px;transition:background .1s}
+.ri{padding:6px 11px;border-bottom:1px solid #0e121e;cursor:pointer;display:flex;align-items:flex-start;gap:7px;transition:background .1s;position:relative}
 .ri:hover{background:#0e1626}
 .ri.active{background:#0d1e3a}
-.rn{width:22px;height:22px;border-radius:50%;background:#1a44aa;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.rname{font-size:12px;font-weight:600;color:#b8d0e8;line-height:1.3}
-.raddr{font-size:10px;color:#4a6a88;margin-top:1px;line-height:1.4}
+.ri.start-point{background:#0a1e0a;border-left:2px solid #22aa55}
+.rn{width:22px;height:22px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ri-body{flex:1;min-width:0}
+.rname{font-size:11px;font-weight:600;color:#b8d0e8;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.raddr{font-size:10px;color:#4a6a88;margin-top:1px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-meta{display:flex;align-items:center;gap:4px;margin-top:2px}
+.seg-badge{font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
+.time-badge{font-size:9px;color:#4a6a78;margin-left:auto}
+.ri-actions{display:flex;gap:3px;margin-left:4px;flex-shrink:0}
+.ri-btn{font-size:9px;padding:2px 5px;border:1px solid #1e2a40;border-radius:3px;background:#0d1220;color:#5a7a90;cursor:pointer;transition:all .1s}
+.ri-btn:hover{background:#1a2a40;color:#8aacc0}
+.ri-btn.set-start{border-color:#1a3a1a;color:#4a8a4a}
+.ri-btn.set-start:hover{background:#0d1e0d;color:#6aaa6a}
 .empty{padding:28px 14px;text-align:center;color:#2a3a50;font-size:12px}
-#algo-desc{padding:9px 13px;border-top:1px solid #141820;font-size:10px;color:#3a5a78;line-height:1.7}
+
+/* FOOTER */
+#algo-desc{padding:7px 13px;border-top:1px solid #141820;font-size:10px;color:#3a5a78;line-height:1.6;flex-shrink:0}
 #algo-desc strong{color:#5a80aa}
+
+/* SEGMENT MODAL */
+#seg-modal{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.65);z-index:9999;display:none;align-items:center;justify-content:center}
+#seg-modal.open{display:flex}
+.modal-box{background:#0d1626;border:1px solid #1e3a60;border-radius:10px;padding:20px;width:340px;max-height:80vh;overflow-y:auto}
+.modal-box::-webkit-scrollbar{width:3px}
+.modal-box::-webkit-scrollbar-thumb{background:#1e2a40}
+.modal-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px}
+.modal-sub{font-size:11px;color:#5a7a98;margin-bottom:14px}
+.modal-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid #141e2e;border-radius:5px;transition:background .1s}
+.modal-item:hover{background:#111e36}
+.modal-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0}
+.modal-name{flex:1;font-size:12px;color:#b0c8e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal-addr{font-size:10px;color:#3a5a78}
+.seg-select{font-size:11px;padding:3px 6px;background:#0d1220;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;cursor:pointer}
+.modal-footer{margin-top:12px;display:flex;gap:8px;justify-content:flex-end}
+
+/* LEAFLET CUSTOM */
 .leaflet-popup-content-wrapper{background:#0d1626;border:1px solid #1e3a60;color:#b0cce8;border-radius:7px}
 .leaflet-popup-tip{background:#0d1626}
 .leaflet-popup-content{font-family:'Segoe UI',sans-serif;font-size:12px;margin:9px 12px}
@@ -78,79 +146,141 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121e;color:#dde4f
 .leaflet-control-zoom a{background:#0d1220!important;border-color:#1e2a40!important;color:#6a8aae!important}
 .leaflet-control-zoom a:hover{background:#141e30!important}
 .leaflet-control-attribution{background:rgba(8,10,20,.8)!important;color:#3a5070!important;font-size:10px!important}
-.leaflet-control-attribution a{color:#3a6090!important}
-
-/* ── DISEÑO RESPONSIVE ───────────────────────────────────────── */
-@media (max-width: 768px) {
-  #main { flex-direction: column; }
-  #sidebar { width: 100%; flex: 0 0 50%; border-left: none; border-top: 2px solid #1a2540; }
-  #map { flex: 1; min-height: 0; }
-  #header { padding: 8px 12px; }
-  #header h1 { font-size: 13px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-  .tag { margin-left: 0; margin-top: 2px; }
-  #toolbar { gap: 6px; padding: 8px 12px; justify-content: flex-start; }
-  .sep { display: none; }
-  #algo-bar { padding: 6px 12px; gap: 4px; }
-  .algo-label { display: none; }
-  .algo-btn { padding: 6px 4px; font-size: 10px; flex: 1; text-align: center; }
-  #stats { padding: 8px 12px; }
-  .sc-v { font-size: 14px; }
-  #status-bar { padding: 8px 12px; line-height: 1.3; align-items: flex-start; }
-  .dot { margin-top: 3px; }
-}
+.start-marker-pulse{width:18px;height:18px;border-radius:50%;background:#22aa55;border:3px solid #fff;box-shadow:0 0 0 4px rgba(34,170,85,.4)}
 </style>
 </head>
 <body>
+
+<!-- HEADER -->
 <div id="header">
-  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-    <circle cx="13" cy="13" r="12" stroke="#2a7aff" stroke-width="1.4"/>
-    <path d="M7 13 Q10 7 13 13 Q16 19 19 13" stroke="#ff6b35" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-    <circle cx="7" cy="13" r="2.2" fill="#22aa55"/>
-    <circle cx="19" cy="13" r="2.2" fill="#dd3333"/>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="11" stroke="#2a7aff" stroke-width="1.3"/>
+    <path d="M6 12 Q9 6 12 12 Q15 18 18 12" stroke="#ff6b35" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle cx="6" cy="12" r="2" fill="#22aa55"/>
+    <circle cx="18" cy="12" r="2" fill="#dd3333"/>
   </svg>
   <div>
     <h1>Optimizador de Rutas Comerciales <span class="tag">Lima Metro</span></h1>
-    <div class="sub">4 algoritmos comparables · Satelital ESRI · OSRM routing · Sin API keys</div>
+    <div class="sub">Punto de inicio · Prioridad de clientes · 20 min/visita · 4 algoritmos · OSRM</div>
   </div>
 </div>
+
+<!-- TOOLBAR -->
 <div id="toolbar">
   <label id="upload-zone" for="file-input">↑ Subir Excel / CSV</label>
   <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
-  <button class="btn" onclick="loadDemo()">🗺 Demo 35 puntos Lima</button>
+  <button class="btn" onclick="loadDemo()">🗺 Demo 35 pts</button>
   <div class="sep"></div>
-  <button class="btn go" id="btn-run" onclick="runAll()" disabled>⚡ Calcular todos los algoritmos</button>
+  <button class="btn" id="btn-seg" onclick="openSegModal()" disabled>⭐ Prioridades de clientes</button>
+  <div class="sep"></div>
+  <button class="btn go" id="btn-run" onclick="runAll()" disabled>⚡ Calcular rutas</button>
   <button class="btn" id="btn-clear" onclick="clearAll()" disabled>✕ Limpiar</button>
   <button class="btn exp" id="btn-export" onclick="exportRoute()" disabled>↓ Exportar</button>
 </div>
+
+<!-- ALGO BAR -->
 <div id="algo-bar">
-  <span class="algo-label">Ver ruta:</span>
+  <span class="algo-label">Ver algoritmo:</span>
   <button class="algo-btn selected" id="ab-0" onclick="selectAlgo(0)">① NN + 2-opt</button>
   <button class="algo-btn" id="ab-1" onclick="selectAlgo(1)">② Or-opt</button>
   <button class="algo-btn" id="ab-2" onclick="selectAlgo(2)">③ Clarke-Wright</button>
   <button class="algo-btn" id="ab-3" onclick="selectAlgo(3)">④ Greedy + 3-opt</button>
 </div>
+
+<!-- PROGRESS / STATUS -->
 <div id="progress"><div id="progress-bar"></div></div>
-<div id="status-bar"><div class="dot" id="sdot"></div><span id="stxt">Carga un Excel o usa el Demo, luego presiona "Calcular todos los algoritmos".</span></div>
+<div id="status-bar"><div class="dot" id="sdot"></div><span id="stxt">Carga un Excel o usa el Demo. Luego configura prioridades y punto de inicio.</span></div>
+
+<!-- MAIN -->
 <div id="main">
   <div id="map"></div>
+
   <div id="sidebar">
-    <div id="sb-top">
-      <span class="title">Orden de visita</span>
-      <span class="cnt" id="pcnt">0 pts</span>
+
+    <!-- CONFIG PANEL -->
+    <div id="config-panel">
+      <div class="cfg-title">⚙ Configuración de ruta</div>
+
+      <div class="cfg-row">
+        <span class="cfg-label">Punto de inicio</span>
+        <select id="start-select" onchange="onStartSelect()">
+          <option value="-1">— Seleccionar cliente —</option>
+        </select>
+      </div>
+      <div id="start-info" class="start-info">Sin punto de inicio definido. Haz clic en un marcador del mapa o selecciona arriba.</div>
+
+      <div class="cfg-row" style="margin-top:6px">
+        <span class="cfg-label">Tiempo/visita</span>
+        <select id="visit-time" onchange="updateTimeInfo()">
+          <option value="20" selected>20 minutos (estándar)</option>
+          <option value="10">10 minutos (rápido)</option>
+          <option value="30">30 minutos (extendido)</option>
+          <option value="45">45 minutos (largo)</option>
+          <option value="60">60 minutos (1 hora)</option>
+        </select>
+      </div>
+
+      <div class="cfg-row">
+        <span class="cfg-label">Hora de salida</span>
+        <input type="time" id="start-time" value="08:00" style="font-size:11px;padding:3px 7px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;flex:1" onchange="updateTimeInfo()">
+      </div>
+      <div id="time-info" class="tip">Configuración aplicada al calcular.</div>
     </div>
+
+    <!-- PRIORITY LEGEND -->
+    <div id="priority-legend">
+      <div class="pleg-title">⭐ Segmentos de cliente</div>
+      <div class="pleg-row"><div class="pleg-dot" style="background:#ff4444"></div> Clave <span style="font-size:10px;color:#ff6666;margin-left:2px">(visitar primero)</span><span class="pleg-weight">peso ×4</span></div>
+      <div class="pleg-row"><div class="pleg-dot" style="background:#ff9922"></div> Grande <span class="pleg-weight">peso ×3</span></div>
+      <div class="pleg-row"><div class="pleg-dot" style="background:#44aaff"></div> Mediano <span class="pleg-weight">peso ×2</span></div>
+      <div class="pleg-row"><div class="pleg-dot" style="background:#7a7aaa"></div> Pequeño <span class="pleg-weight">peso ×1</span></div>
+      <div class="pleg-row"><div class="pleg-dot" style="background:#22aa55;border-color:#fff"></div> Punto de inicio <span class="pleg-weight">—</span></div>
+    </div>
+
+    <!-- STATS -->
     <div id="stats">
-      <div class="sc"><div class="sc-l">Distancia</div><div class="sc-v" id="sv-d">—</div></div>
+      <div class="sc"><div class="sc-l">Distancia real</div><div class="sc-v" id="sv-d">—</div></div>
       <div class="sc"><div class="sc-l">Paradas</div><div class="sc-v" id="sv-s">—</div></div>
-      <div class="sc"><div class="sc-l">Tiempo est.</div><div class="sc-v" id="sv-t">—</div></div>
-      <div class="sc"><div class="sc-l">Algoritmo activo</div><div class="sc-v sm" id="sv-a">—</div></div>
+      <div class="sc"><div class="sc-l">T. conducción</div><div class="sc-v" id="sv-drive">—</div></div>
+      <div class="sc sc-full" style="grid-column:1/-1">
+        <div class="sc-l">Tiempo total (conducción + visitas)</div>
+        <div class="sc-v" id="sv-total" style="font-size:18px;color:#6aff8a">—</div>
+      </div>
+      <div class="sc sc-full" style="grid-column:1/-1">
+        <div class="sc-l">Horario estimado</div>
+        <div class="sc-v sm" id="sv-schedule">—</div>
+      </div>
+      <div class="sc sc-full" style="grid-column:1/-1">
+        <div class="sc-l">Algoritmo activo</div>
+        <div class="sc-v sm" id="sv-a">—</div>
+      </div>
     </div>
+
+    <!-- COMPARE -->
     <div id="compare-panel">
       <div class="cp-title">Comparar algoritmos</div>
       <div id="cp-rows"></div>
     </div>
+
+    <!-- ROUTE LIST -->
     <div id="route-list"><div class="empty">Ningún punto cargado</div></div>
+
+    <!-- FOOTER -->
     <div id="algo-desc">
-      <strong>① NN+2opt</strong> parte del mejor inicio posible · <strong>② Or-opt</strong> reinserta nodos y pares · <strong>③ Clarke-Wright</strong> combina rutas por ahorro máximo · <strong>④ Greedy+3opt</strong> construye desde aristas más cortas + perturbación doble. El mejor se marca en verde ✓.
+      <strong>Prioridades</strong> ajustan la distancia efectiva: clientes clave se visitan antes. <strong>Punto de inicio</strong> fijado como nodo 0 en todos los algoritmos.
+    </div>
+  </div>
+</div>
+
+<!-- SEGMENT MODAL -->
+<div id="seg-modal">
+  <div class="modal-box">
+    <div class="modal-title">⭐ Prioridades de clientes</div>
+    <div class="modal-sub">Asigna el segmento comercial a cada cliente. Los clientes "Clave" y "Grande" se visitan primero.</div>
+    <div id="modal-list"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="setAllSegment('pequeño')">Todos → Pequeño</button>
+      <button class="btn go" onclick="closeSegModal()">✓ Guardar y cerrar</button>
     </div>
   </div>
 </div>
@@ -158,18 +288,38 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121e;color:#dde4f
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-var map, points=[], results=[null,null,null,null], activeAlgo=0, markersLayer=[], routePolylines=[];
-var NAMES=['NN + 2-opt','Or-opt','Clarke-Wright Savings','Greedy + 3-opt'];
-var COLORS=['#ff6b35','#22aaff','#ffdd22','#cc44ff'];
+// ═══════════════════════════════════════════════════════════════
+//  CONSTANTES
+// ═══════════════════════════════════════════════════════════════
+var NAMES  = ['NN + 2-opt','Or-opt','Clarke-Wright Savings','Greedy + 3-opt'];
+var COLORS = ['#ff6b35','#22aaff','#ffdd22','#cc44ff'];
 
-// ── MAPA ──────────────────────────────────────────────────────
+var SEG_CONFIG = {
+  'clave':   { label:'Clave',   color:'#ff4444', weight:4, order:1 },
+  'grande':  { label:'Grande',  color:'#ff9922', weight:3, order:2 },
+  'mediano': { label:'Mediano', color:'#44aaff', weight:2, order:3 },
+  'pequeño': { label:'Pequeño', color:'#7a7aaa', weight:1, order:4 }
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════════
+var map, points=[], results=[null,null,null,null];
+var activeAlgo=0, startIdx=0, markersLayer=[], routePolylines=[];
+var startMarker=null;
+
+// ═══════════════════════════════════════════════════════════════
+//  MAPA
+// ═══════════════════════════════════════════════════════════════
 (function(){
   map=L.map('map',{center:[-12.1,-77.03],zoom:13});
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri',maxZoom:19}).addTo(map);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CARTO',maxZoom:19,opacity:0.8}).addTo(map);
 })();
 
-// ── UI ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════════════
 function setStatus(msg,s){
   document.getElementById('stxt').textContent=msg;
   var d=document.getElementById('sdot');
@@ -177,10 +327,35 @@ function setStatus(msg,s){
 }
 function setProgress(p){document.getElementById('progress-bar').style.width=p+'%';}
 function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function fmtMin(m){
+  var h=Math.floor(m/60),mn=Math.round(m%60);
+  return h>0?(h+'h '+(mn>0?mn+'min':'')):(mn+'min');
+}
+function addMinToTime(timeStr,mins){
+  var parts=timeStr.split(':'),h=parseInt(parts[0]),m=parseInt(parts[1]);
+  var total=h*60+m+Math.round(mins);
+  var nh=Math.floor(total/60)%24,nm=total%60;
+  return (nh<10?'0':'')+nh+':'+(nm<10?'0':'')+nm;
+}
 
-// ── FILE INPUT ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  TIEMPO INFO
+// ═══════════════════════════════════════════════════════════════
+function updateTimeInfo(){
+  var vm=parseInt(document.getElementById('visit-time').value);
+  var st=document.getElementById('start-time').value;
+  if(!points.length) return;
+  var n=points.length;
+  var est=n*vm;
+  document.getElementById('time-info').textContent=
+    n+' visitas × '+vm+' min = '+fmtMin(est)+' de visitas. Salida: '+st;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FILE INPUT
+// ═══════════════════════════════════════════════════════════════
 document.getElementById('file-input').addEventListener('change',function(e){
-  var f=e.target.files[0]; if(!f) return;
+  var f=e.target.files[0]; if(!f)return;
   setStatus('Leyendo "'+f.name+'"...','run'); setProgress(10);
   var r=new FileReader();
   r.onload=function(ev){
@@ -191,7 +366,7 @@ document.getElementById('file-input').addEventListener('change',function(e){
       var pts=parseRows(rows);
       loadPoints(pts);
       setStatus(pts.length+' puntos cargados desde "'+f.name+'"','ok');
-      setProgress(100); setTimeout(function(){setProgress(0);},700);
+      setProgress(100);setTimeout(function(){setProgress(0);},700);
     }catch(err){setStatus('Error: '+err.message,'warn');setProgress(0);}
   };
   r.readAsArrayBuffer(f);
@@ -202,138 +377,323 @@ function findCol(hdr){
   var keys=Array.prototype.slice.call(arguments,1);
   for(var k=0;k<keys.length;k++){
     var i=hdr.findIndex(function(h){return h.indexOf(keys[k])>=0||keys[k].indexOf(h)>=0;});
-    if(i>=0) return i;
+    if(i>=0)return i;
   }
   return -1;
 }
-function toNum(v){
-  if(v===null||v===undefined||v==='') return null;
-  var n=parseFloat(String(v).replace(',','.'));
-  return isNaN(n)?null:n;
-}
-function splitCoord(s){
-  var m=String(s).trim().match(/(-?\d{1,3}\.?\d*)[,\s;|]+(-?\d{1,3}\.?\d*)/);
-  return m?[parseFloat(m[1]),parseFloat(m[2])]:null;
-}
+function toNum(v){if(v===null||v===undefined||v==='')return null;var n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n;}
+function splitCoord(s){var m=String(s).trim().match(/(-?\d{1,3}\.?\d*)[,\s;|]+(-?\d{1,3}\.?\d*)/);return m?[parseFloat(m[1]),parseFloat(m[2])]:null;}
+
 function parseRows(rows){
-  if(!rows||rows.length<2) throw new Error('Archivo vacío.');
+  if(!rows||rows.length<2)throw new Error('Archivo vacío.');
   var hdr=rows[0].map(function(h){return String(h||'').toLowerCase().trim();});
   var iN=findCol(hdr,'nombre','name','cliente','razon','comercio','tienda','empresa','negocio','local');
   var iA=findCol(hdr,'direccion','address','calle','domicilio','ubicacion','dir');
   var iC=findCol(hdr,'coordenadas','coords','coordinates','latlong','latlng','google');
   var iLat=findCol(hdr,'lat','latitude','latitud','y');
   var iLon=findCol(hdr,'lng','lon','long','longitude','longitud','x');
+  var iSeg=findCol(hdr,'segmento','segment','tipo','type','prioridad','priority','categoria','categoria');
   var out=[];
   for(var i=1;i<rows.length;i++){
     var row=rows[i];
-    if(!row||row.every(function(c){return !c;})) continue;
+    if(!row||row.every(function(c){return !c;}))continue;
     var lat=null,lon=null;
     if(iC>=0&&row[iC]){var p=splitCoord(row[iC]);if(p){lat=p[0];lon=p[1];}}
-    if((lat===null||lon===null)&&iLat>=0&&iLon>=0){
-      var la=toNum(row[iLat]),lo=toNum(row[iLon]);
-      if(la!==null&&lo!==null){lat=la;lon=lo;}
+    if((lat===null||lon===null)&&iLat>=0&&iLon>=0){var la=toNum(row[iLat]),lo=toNum(row[iLon]);if(la!==null&&lo!==null){lat=la;lon=lo;}}
+    if(lat===null||lon===null)continue;
+    if(lat<-13||lat>-11||lon<-77.5||lon>-76.5)continue;
+    var seg='pequeño';
+    if(iSeg>=0&&row[iSeg]){
+      var sv=String(row[iSeg]).toLowerCase().trim();
+      if(sv.indexOf('clave')>=0||sv==='key'||sv==='1')seg='clave';
+      else if(sv.indexOf('grande')>=0||sv==='large'||sv==='2')seg='grande';
+      else if(sv.indexOf('mediano')>=0||sv.indexOf('median')>=0||sv==='3')seg='mediano';
+      else seg='pequeño';
     }
-    if(lat===null||lon===null) continue;
-    if(lat<-13||lat>-11||lon<-77.5||lon>-76.5) continue;
-    out.push({id:i,name:(iN>=0&&row[iN])?String(row[iN]).trim():'Punto '+i,
-              address:(iA>=0&&row[iA])?String(row[iA]).trim():'',lat:lat,lon:lon});
+    out.push({
+      id:i,
+      name:(iN>=0&&row[iN])?String(row[iN]).trim():'Punto '+i,
+      address:(iA>=0&&row[iA])?String(row[iA]).trim():'',
+      lat:lat,lon:lon,segment:seg
+    });
   }
-  if(out.length<2) throw new Error('No se encontraron coordenadas válidas en Lima. Verifica columnas: lat, lon (o "coordenadas" con formato -12.046, -77.042).');
+  if(out.length<2)throw new Error('No se encontraron coordenadas válidas en Lima.');
   return out;
 }
 
-// ── DEMO ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  DEMO 35 PUNTOS
+// ═══════════════════════════════════════════════════════════════
 function loadDemo(){
+  var segs=['clave','clave','clave','grande','grande','grande','grande','mediano','mediano','mediano',
+            'mediano','mediano','mediano','mediano','pequeño','pequeño','pequeño','pequeño','pequeño',
+            'pequeño','pequeño','pequeño','pequeño','pequeño','pequeño','pequeño','pequeño','pequeño',
+            'pequeño','pequeño','pequeño','pequeño','pequeño','pequeño','pequeño'];
   loadPoints([
-    {id:1,name:'Óptica Miraflores',address:'Av. Larco 345',lat:-12.1214,lon:-77.0300},
-    {id:2,name:'Ferretería La Victoria',address:'Av. Aviación 2801',lat:-12.0816,lon:-77.0132},
-    {id:3,name:'Bodega San Borja Sur',address:'Av. San Luis 2500',lat:-12.1050,lon:-76.9990},
-    {id:4,name:'Distribuidora Surco',address:'Av. Caminos del Inca 480',lat:-12.1320,lon:-76.9980},
-    {id:5,name:'Panadería Don Pepe',address:'Av. Benavides 2900',lat:-12.1380,lon:-77.0100},
-    {id:6,name:'Minimarket Chorrillos',address:'Av. Huaylas 120',lat:-12.1600,lon:-77.0010},
-    {id:7,name:'Farmacia Barranco',address:'Av. Grau 500',lat:-12.1490,lon:-77.0210},
-    {id:8,name:'Librería Chorrillos 2',address:'Av. Defensores 200',lat:-12.1700,lon:-77.0130},
-    {id:9,name:'Bodega La Marina',address:'Av. La Marina 3500',lat:-12.1350,lon:-77.0650},
-    {id:10,name:'Ferretería Surquillo',address:'Av. Tomás Marsano 100',lat:-12.1450,lon:-77.0300},
-    {id:11,name:'Tienda Miraflores C',address:'Calle Alcanfores 572',lat:-12.1270,lon:-77.0290},
-    {id:12,name:'Supermercado Wong S',address:'Av. Benavides 3600',lat:-12.1290,lon:-77.0200},
-    {id:13,name:'Bazar Surquillo N',address:'Jr. Canepa 120',lat:-12.1230,lon:-77.0380},
-    {id:14,name:'Distribuidora Lince',address:'Av. Arequipa 3200',lat:-12.0980,lon:-77.0310},
-    {id:15,name:'Bodega San Isidro',address:'Calle Las Begonias 200',lat:-12.0940,lon:-77.0420},
-    {id:16,name:'Librería San Isidro',address:'Av. Javier Prado 900',lat:-12.0970,lon:-77.0350},
-    {id:17,name:'Farmacia Lince',address:'Av. Arequipa 3500',lat:-12.0960,lon:-77.0330},
-    {id:18,name:'Tienda Jesús María',address:'Av. Cuba 1100',lat:-12.0910,lon:-77.0360},
-    {id:19,name:'Bodega Magdalena',address:'Av. Brasil 3500',lat:-12.0880,lon:-77.0440},
-    {id:20,name:'Minimarket San Miguel',address:'Av. La Mar 700',lat:-12.0870,lon:-77.0500},
-    {id:21,name:'Distribuidora Pueblo L.',address:'Av. Javier Prado E 500',lat:-12.0900,lon:-77.0290},
-    {id:22,name:'Ferretería Breña',address:'Av. Arica 500',lat:-12.0640,lon:-77.0440},
-    {id:23,name:'Bodega Miraflores D',address:'Av. Ricardo Palma 300',lat:-12.1170,lon:-77.0280},
-    {id:24,name:'Bazar Surco Este',address:'Av. El Polo 700',lat:-12.1280,lon:-77.0050},
-    {id:25,name:'Panadería Surco C',address:'Calle Monte Rosa 180',lat:-12.1300,lon:-77.0080},
-    {id:26,name:'Minimarket La Molina',address:'Av. La Molina 1200',lat:-12.1340,lon:-76.9900},
-    {id:27,name:'Tienda Surco Oeste',address:'Av. Primavera 800',lat:-12.1200,lon:-77.0050},
-    {id:28,name:'Bodega San Borja N',address:'Av. San Borja Norte 600',lat:-12.1020,lon:-77.0070},
-    {id:29,name:'Farmacia Surquillo 2',address:'Av. Angamos Este 1200',lat:-12.1060,lon:-77.0130},
-    {id:30,name:'Distribuidora San Borja',address:'Av. Javier Prado E 3000',lat:-12.0990,lon:-77.0060},
-    {id:31,name:'Bodega Ate W',address:'Av. La Cultura 300',lat:-12.0750,lon:-77.0100},
-    {id:32,name:'Tienda Surquillo Nor',address:'Av. Tomás Marsano 500',lat:-12.0880,lon:-77.0190},
-    {id:33,name:'Ferretería San Borja 2',address:'Av. Guardia Civil 880',lat:-12.0900,lon:-77.0140},
-    {id:34,name:'Minimarket Santiago',address:'Av. Javier Prado E 5200',lat:-12.0680,lon:-76.9910},
-    {id:35,name:'Bodega La Encalada',address:'Av. La Encalada 250',lat:-12.1100,lon:-77.0010}
+    {id:1,name:'Distribuidora Central Lima',address:'Av. Javier Prado Este 3000',lat:-12.0990,lon:-77.0060,segment:segs[0]},
+    {id:2,name:'Supermercado Wong Miraflores',address:'Av. Benavides 3600',lat:-12.1290,lon:-77.0200,segment:segs[1]},
+    {id:3,name:'Hipermercado Tottus Surco',address:'Av. Caminos del Inca 900',lat:-12.1350,lon:-76.9950,segment:segs[2]},
+    {id:4,name:'Mayorista La Victoria',address:'Av. Aviación 2800',lat:-12.0820,lon:-77.0140,segment:segs[3]},
+    {id:5,name:'Distribuidora San Borja',address:'Av. San Luis 2500',lat:-12.1050,lon:-76.9990,segment:segs[4]},
+    {id:6,name:'Cadena Farmacias Surquillo',address:'Av. Angamos Este 1200',lat:-12.1060,lon:-77.0130,segment:segs[5]},
+    {id:7,name:'Minimarket Chorrillos Centro',address:'Av. Huaylas 120',lat:-12.1600,lon:-77.0010,segment:segs[6]},
+    {id:8,name:'Bodega El Progreso',address:'Av. Benavides 1230',lat:-12.1191,lon:-77.0282,segment:segs[7]},
+    {id:9,name:'Farmacia San Pablo Lince',address:'Av. Arequipa 3200',lat:-12.0980,lon:-77.0310,segment:segs[8]},
+    {id:10,name:'Bodega San Isidro Norte',address:'Calle Las Begonias 200',lat:-12.0940,lon:-77.0420,segment:segs[9]},
+    {id:11,name:'Tienda Jesús María',address:'Av. Cuba 1100',lat:-12.0910,lon:-77.0360,segment:segs[10]},
+    {id:12,name:'Minimarket Magdalena',address:'Av. Brasil 3500',lat:-12.0880,lon:-77.0440,segment:segs[11]},
+    {id:13,name:'Panadería Don Pepe',address:'Av. Benavides 2900',lat:-12.1380,lon:-77.0100,segment:segs[12]},
+    {id:14,name:'Bodega Miraflores Centro',address:'Av. Ricardo Palma 300',lat:-12.1170,lon:-77.0280,segment:segs[13]},
+    {id:15,name:'Minimarket San Miguel',address:'Av. La Mar 700',lat:-12.0870,lon:-77.0500,segment:segs[14]},
+    {id:16,name:'Ferretería Los Andes',address:'Av. 28 de Julio 680',lat:-12.1195,lon:-77.0261,segment:segs[15]},
+    {id:17,name:'Librería San Isidro',address:'Av. Javier Prado 900',lat:-12.0970,lon:-77.0350,segment:segs[16]},
+    {id:18,name:'Farmacia Barranco',address:'Av. Grau 500',lat:-12.1490,lon:-77.0210,segment:segs[17]},
+    {id:19,name:'Bazar Surco Este',address:'Av. El Polo 700',lat:-12.1280,lon:-77.0050,segment:segs[18]},
+    {id:20,name:'Panadería La Flor',address:'Calle Alcanfores 572',lat:-12.1230,lon:-77.0274,segment:segs[19]},
+    {id:21,name:'Distribuidora Pueblo Libre',address:'Av. Javier Prado 500',lat:-12.0900,lon:-77.0290,segment:segs[20]},
+    {id:22,name:'Ferretería Breña',address:'Av. Arica 500',lat:-12.0640,lon:-77.0440,segment:segs[21]},
+    {id:23,name:'Bodega Surquillo Norte',address:'Jr. Canepa 120',lat:-12.1230,lon:-77.0380,segment:segs[22]},
+    {id:24,name:'Panadería Surco Centro',address:'Calle Monte Rosa 180',lat:-12.1300,lon:-77.0080,segment:segs[23]},
+    {id:25,name:'Minimarket La Molina',address:'Av. La Molina 1200',lat:-12.1340,lon:-76.9900,segment:segs[24]},
+    {id:26,name:'Tienda Surco Oeste',address:'Av. Primavera 800',lat:-12.1200,lon:-77.0050,segment:segs[25]},
+    {id:27,name:'Bodega San Borja Norte',address:'Av. San Borja Norte 600',lat:-12.1020,lon:-77.0070,segment:segs[26]},
+    {id:28,name:'Bodega La Marina',address:'Av. La Marina 3500',lat:-12.1350,lon:-77.0650,segment:segs[27]},
+    {id:29,name:'Ferretería Surquillo',address:'Av. Tomás Marsano 100',lat:-12.1450,lon:-77.0300,segment:segs[28]},
+    {id:30,name:'Librería Chorrillos',address:'Av. Defensores 200',lat:-12.1700,lon:-77.0130,segment:segs[29]},
+    {id:31,name:'Bodega Ate Oeste',address:'Av. La Cultura 300',lat:-12.0750,lon:-77.0100,segment:segs[30]},
+    {id:32,name:'Tienda Surquillo Norte',address:'Av. Tomás Marsano 500',lat:-12.0880,lon:-77.0190,segment:segs[31]},
+    {id:33,name:'Ferretería San Borja',address:'Av. Guardia Civil 880',lat:-12.0900,lon:-77.0140,segment:segs[32]},
+    {id:34,name:'Minimarket Santiago',address:'Av. Javier Prado E 5200',lat:-12.0680,lon:-76.9910,segment:segs[33]},
+    {id:35,name:'Bodega La Encalada',address:'Av. La Encalada 250',lat:-12.1100,lon:-77.0010,segment:segs[34]}
   ]);
-  setStatus('Demo 35 puntos cargado. Haz clic en "Calcular todos los algoritmos".','ok');
+  setStatus('Demo 35 puntos (3 Clave, 4 Grande, 7 Mediano, 21 Pequeño). Configura el punto de inicio y calcula.','ok');
 }
 
-// ── CARGAR PUNTOS ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  CARGAR PUNTOS
+// ═══════════════════════════════════════════════════════════════
 function loadPoints(pts){
   clearAll(false);
   points=pts;
-  renderMarkers(pts.map(function(_,i){return i;}),0);
+  startIdx=0;
+  renderMarkers(pts.map(function(_,i){return i;}),0,0);
   renderList(pts.map(function(_,i){return i;}));
+  populateStartSelect();
+  updateStartInfo();
+  updateTimeInfo();
   document.getElementById('btn-run').disabled=false;
   document.getElementById('btn-clear').disabled=false;
+  document.getElementById('btn-seg').disabled=false;
   document.getElementById('pcnt').textContent=pts.length+' pts';
   if(pts.length>0){
-    var lats=pts.map(function(p){return p.lat;}), lons=pts.map(function(p){return p.lon;});
+    var lats=pts.map(function(p){return p.lat;}),lons=pts.map(function(p){return p.lon;});
     map.fitBounds([[Math.min.apply(null,lats),Math.min.apply(null,lons)],[Math.max.apply(null,lats),Math.max.apply(null,lons)]],{padding:[50,50]});
   }
 }
 
-// ── MARCADORES ────────────────────────────────────────────────
-function makeIcon(num,bg){
-  return L.divIcon({
-    html:'<div style="width:26px;height:26px;border-radius:50%;background:'+bg+';border:2px solid rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;box-shadow:0 2px 7px rgba(0,0,0,.5)">'+num+'</div>',
-    className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-15]
+// ═══════════════════════════════════════════════════════════════
+//  PUNTO DE INICIO
+// ═══════════════════════════════════════════════════════════════
+function populateStartSelect(){
+  var sel=document.getElementById('start-select');
+  sel.innerHTML='';
+  points.forEach(function(p,i){
+    var opt=document.createElement('option');
+    opt.value=i;
+    var sc=SEG_CONFIG[p.segment||'pequeño'];
+    opt.textContent='['+sc.label+'] '+p.name;
+    if(i===startIdx)opt.selected=true;
+    sel.appendChild(opt);
   });
 }
-function renderMarkers(order,aIdx){
+
+function onStartSelect(){
+  startIdx=parseInt(document.getElementById('start-select').value);
+  updateStartInfo();
+  placeStartMarker(startIdx);
+  renderMarkers(points.map(function(_,i){return i;}),activeAlgo,startIdx);
+  renderList(points.map(function(_,i){return i;}));
+}
+
+function updateStartInfo(){
+  var el=document.getElementById('start-info');
+  if(!points.length){el.textContent='Sin punto de inicio definido.';el.className='start-info';return;}
+  var p=points[startIdx];
+  var sc=SEG_CONFIG[p.segment||'pequeño'];
+  el.textContent='Inicio: '+p.name+' ('+sc.label+')' + (p.address?' · '+p.address:'');
+  el.className='start-info active';
+}
+
+function placeStartMarker(idx){
+  if(startMarker){map.removeLayer(startMarker);startMarker=null;}
+  if(!points[idx])return;
+  var p=points[idx];
+  var icon=L.divIcon({
+    html:'<div class="start-marker-pulse"></div>',
+    className:'',iconSize:[18,18],iconAnchor:[9,9]
+  });
+  startMarker=L.marker([p.lat,p.lon],{icon:icon,zIndexOffset:1000}).addTo(map);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SEGMENTOS MODAL
+// ═══════════════════════════════════════════════════════════════
+function openSegModal(){
+  var list=document.getElementById('modal-list');
+  list.innerHTML='';
+  points.forEach(function(p,i){
+    var sc=SEG_CONFIG[p.segment||'pequeño'];
+    var div=document.createElement('div');
+    div.className='modal-item';
+    div.innerHTML=
+      '<div class="modal-dot" style="background:'+sc.color+'"></div>'+
+      '<div style="flex:1;min-width:0"><div class="modal-name">'+p.name+'</div>'+
+      (p.address?'<div class="modal-addr">'+p.address+'</div>':'')+'</div>'+
+      '<select class="seg-select" data-idx="'+i+'">'+
+        '<option value="clave"'+(p.segment==='clave'?' selected':'')+'>⭐ Clave</option>'+
+        '<option value="grande"'+(p.segment==='grande'?' selected':'')+'>🔶 Grande</option>'+
+        '<option value="mediano"'+(p.segment==='mediano'?' selected':'')+'>🔷 Mediano</option>'+
+        '<option value="pequeño"'+(p.segment==='pequeño'?' selected':'')+'>· Pequeño</option>'+
+      '</select>';
+    div.querySelector('.seg-select').addEventListener('change',function(){
+      var idx=parseInt(this.getAttribute('data-idx'));
+      points[idx].segment=this.value;
+      // actualizar dot
+      var dot=div.querySelector('.modal-dot');
+      dot.style.background=SEG_CONFIG[this.value].color;
+    });
+    list.appendChild(div);
+  });
+  document.getElementById('seg-modal').classList.add('open');
+}
+
+function closeSegModal(){
+  document.getElementById('seg-modal').classList.remove('open');
+  // Re-renderizar marcadores con nuevos colores
+  var currentOrder=points.map(function(_,i){return i;});
+  if(results[activeAlgo])currentOrder=results[activeAlgo].tour;
+  renderMarkers(currentOrder,activeAlgo,startIdx);
+  renderList(currentOrder);
+  populateStartSelect();
+  updateStartInfo();
+}
+
+function setAllSegment(seg){
+  points.forEach(function(p){p.segment=seg;});
+  openSegModal(); // refrescar
+}
+
+// Click outside modal
+document.getElementById('seg-modal').addEventListener('click',function(e){
+  if(e.target===this)closeSegModal();
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  MARCADORES
+// ═══════════════════════════════════════════════════════════════
+function segColor(p){return SEG_CONFIG[p.segment||'pequeño'].color;}
+
+function makeIcon(num, bg, isStart){
+  var size=isStart?28:24;
+  var border=isStart?'3px solid #fff':'2px solid rgba(255,255,255,.7)';
+  var glow=isStart?'0 0 0 3px rgba(34,170,85,.5),0 2px 8px rgba(0,0,0,.6)':'0 2px 6px rgba(0,0,0,.5)';
+  return L.divIcon({
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+bg+';border:'+border+';display:flex;align-items:center;justify-content:center;font-size:'+(isStart?11:10)+'px;font-weight:700;color:#fff;box-shadow:'+glow+'">'+num+'</div>',
+    className:'',iconSize:[size,size],iconAnchor:[size/2,size/2],popupAnchor:[0,-size/2-2]
+  });
+}
+
+function renderMarkers(order, aIdx, sIdx){
   markersLayer.forEach(function(m){map.removeLayer(m);}); markersLayer=[];
-  var base=COLORS[aIdx];
-  order.forEach(function(idx,i){
+  if(startMarker){map.removeLayer(startMarker);startMarker=null;}
+  order.forEach(function(idx,pos){
     var p=points[idx];
-    var color=i===0?'#22aa55':i===order.length-1?'#dd3333':base;
-    var m=L.marker([p.lat,p.lon],{icon:makeIcon(i+1,color)}).addTo(map);
-    m.bindPopup('<strong style="color:#6aaeff">'+(i+1)+'. '+p.name+'</strong>'+(p.address?'<br><span style="color:#6a8aaa">'+p.address+'</span>':'')+'<br><span style="color:#3a5a7a;font-size:10px">'+p.lat.toFixed(5)+', '+p.lon.toFixed(5)+'</span>');
+    var isStart=(idx===sIdx);
+    var color=isStart?'#22aa55':segColor(p);
+    var m=L.marker([p.lat,p.lon],{icon:makeIcon(pos+1,color,isStart)}).addTo(map);
+    var sc=SEG_CONFIG[p.segment||'pequeño'];
+    m.bindPopup(
+      '<div style="min-width:170px">'+
+      '<div style="font-size:12px;font-weight:700;color:#6aaeff;margin-bottom:4px">'+(pos+1)+'. '+p.name+'</div>'+
+      (p.address?'<div style="color:#6a8aaa;font-size:11px;margin-bottom:3px">'+p.address+'</div>':'')+
+      '<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">'+
+        '<div style="width:9px;height:9px;border-radius:50%;background:'+sc.color+'"></div>'+
+        '<span style="font-size:11px;color:'+sc.color+'">'+sc.label+'</span>'+
+      '</div>'+
+      (isStart?'<div style="font-size:10px;color:#22aa55;font-weight:600">★ PUNTO DE INICIO</div>':
+        '<button onclick="setStartFromMap('+idx+')" style="font-size:10px;padding:2px 7px;background:#0d1e0d;border:1px solid #2a5a2a;color:#6aaa6a;border-radius:3px;cursor:pointer;margin-top:2px">Establecer como inicio</button>')+
+      '</div>'
+    );
+    // Click en marcador para seleccionar como inicio si no tiene popup abierto
+    m._ptIdx=idx;
     markersLayer.push(m);
   });
 }
+
+function setStartFromMap(idx){
+  startIdx=idx;
+  document.getElementById('start-select').value=idx;
+  updateStartInfo();
+  renderMarkers(
+    results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;}),
+    activeAlgo,startIdx
+  );
+  renderList(results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;}));
+  setStatus('Punto de inicio: '+points[idx].name+'. Vuelve a calcular para actualizar la ruta.','ok');
+}
+
 function clearLines(){routePolylines.forEach(function(l){map.removeLayer(l);});routePolylines=[];}
 
-// ── DISTANCIA ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  DISTANCIA + MATRIZ CON PRIORIDAD
+// ═══════════════════════════════════════════════════════════════
 function hav(a,b){
   var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
   var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
-function buildD(pts){
+
+// Distancia ponderada por prioridad: dividir por peso hace que los clientes
+// importantes "parezcan más cercanos" al algoritmo → los visita antes
+function buildD(pts, sIdx){
+  var n=pts.length, D=[];
+  for(var i=0;i<n;i++)D[i]=new Float64Array(n);
+  for(var i=0;i<n;i++){
+    for(var j=i+1;j<n;j++){
+      var raw=hav(pts[i],pts[j]);
+      var wi=SEG_CONFIG[pts[i].segment||'pequeño'].weight;
+      var wj=SEG_CONFIG[pts[j].segment||'pequeño'].weight;
+      // Distancia efectiva: menor entre clientes de mayor peso
+      // Para el origen (sIdx) no se penaliza
+      var factor=(i===sIdx||j===sIdx)?1:(1/(Math.sqrt(wi*wj)));
+      D[i][j]=D[j][i]=raw*factor;
+    }
+  }
+  return D;
+}
+
+// Distancia real (sin ponderación) para estadísticas
+function buildDRaw(pts){
   var n=pts.length,D=[];
-  for(var i=0;i<n;i++){D[i]=new Float64Array(n);}
+  for(var i=0;i<n;i++)D[i]=new Float64Array(n);
   for(var i=0;i<n;i++) for(var j=i+1;j<n;j++) D[i][j]=D[j][i]=hav(pts[i],pts[j]);
   return D;
 }
+
 function tourLen(D,t){var d=0;for(var i=0;i<t.length-1;i++)d+=D[t[i]][t[i+1]];return d;}
 
-// ── 2-OPT ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  REORDENAR TOUR PARA QUE EMPIECE EN startIdx
+// ═══════════════════════════════════════════════════════════════
+function rotateTour(tour, sIdx){
+  var pos=tour.indexOf(sIdx);
+  if(pos<=0)return tour;
+  return tour.slice(pos).concat(tour.slice(0,pos));
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  2-OPT
+// ═══════════════════════════════════════════════════════════════
 function twoOpt(D,tour){
   var n=tour.length,best=tour.slice(),imp=true,it=0,tmp;
   while(imp&&it<400){
@@ -353,59 +713,70 @@ function twoOpt(D,tour){
   return best;
 }
 
-// ── ALGORITMO 1: NN multi-start + 2-opt ───────────────────────
-function algoNN2opt(D){
+// ═══════════════════════════════════════════════════════════════
+//  ALGORITMO 1: NN multi-start + 2-opt (forzar inicio en sIdx)
+// ═══════════════════════════════════════════════════════════════
+function algoNN2opt(D,sIdx){
   var n=D.length,bestTour=null,bestLen=Infinity;
-  var starts=Math.min(n,10);
-  for(var s=0;s<starts;s++){
-    var visited=new Uint8Array(n),tour=[s];visited[s]=1;
+  // Siempre probar desde sIdx primero, luego otros starts
+  var starts=[sIdx];
+  for(var k=0;k<n&&starts.length<8;k++) if(k!==sIdx)starts.push(k);
+  for(var si=0;si<starts.length;si++){
+    var start=starts[si];
+    var visited=new Uint8Array(n),tour=[start];visited[start]=1;
     for(var k=1;k<n;k++){
       var cur=tour[tour.length-1],best=-1,bd=Infinity;
       for(var j=0;j<n;j++) if(!visited[j]&&D[cur][j]<bd){bd=D[cur][j];best=j;}
       tour.push(best);visited[best]=1;
     }
-    var len=tourLen(D,tour);
-    if(len<bestLen){bestLen=len;bestTour=tour.slice();}
+    var t2=twoOpt(D,tour);
+    var t2r=rotateTour(t2,sIdx);
+    var len=tourLen(D,t2r);
+    if(len<bestLen){bestLen=len;bestTour=t2r.slice();}
   }
-  return twoOpt(D,bestTour);
+  return bestTour;
 }
 
-// ── ALGORITMO 2: Or-opt (reinserción) ─────────────────────────
-function algoOrOpt(D){
-  var tour=algoNN2opt(D).slice(),n=tour.length,imp=true,it=0,i,j,node,costR,costI,newTour,ins;
+// ═══════════════════════════════════════════════════════════════
+//  ALGORITMO 2: Or-opt con punto de inicio fijo
+// ═══════════════════════════════════════════════════════════════
+function algoOrOpt(D,sIdx){
+  var tour=algoNN2opt(D,sIdx).slice(),n=tour.length,imp=true,it=0;
   while(imp&&it<300){
     imp=false;it++;
-    // Or-opt-1: reinsertar nodo individual
     var found=false;
-    for(i=1;i<n-1&&!found;i++){
-      node=tour[i];
-      costR=D[tour[i-1]][node]+D[node][tour[i+1]]-D[tour[i-1]][tour[i+1]];
-      for(j=0;j<n-1&&!found;j++){
+    for(var i=1;i<n-1&&!found;i++){
+      // No mover el punto de inicio
+      if(tour[i]===sIdx)continue;
+      var node=tour[i];
+      var costR=D[tour[i-1]][node]+D[node][tour[i+1]]-D[tour[i-1]][tour[i+1]];
+      for(var j=0;j<n-1&&!found;j++){
         if(j>=i-1&&j<=i+1)continue;
-        costI=D[tour[j]][node]+D[node][tour[j+1]]-D[tour[j]][tour[j+1]];
+        // No insertar antes del punto de inicio si está en posición 0
+        var costI=D[tour[j]][node]+D[node][tour[j+1]]-D[tour[j]][tour[j+1]];
         if(costI-costR<-1e-9){
-          newTour=[];
-          for(var k=0;k<tour.length;k++) if(k!==i) newTour.push(tour[k]);
-          ins=j<i?j+1:j;
+          var newTour=[];
+          for(var k=0;k<tour.length;k++) if(k!==i)newTour.push(tour[k]);
+          var ins=j<i?j+1:j;
           newTour.splice(ins,0,node);
           tour=newTour;n=tour.length;imp=true;found=true;
         }
       }
     }
-    // Or-opt-2: reinsertar pares
     var found2=false;
-    for(i=1;i<n-2&&!found2;i++){
+    for(var i=1;i<n-2&&!found2;i++){
+      if(tour[i]===sIdx||tour[i+1]===sIdx)continue;
       var n1=tour[i],n2=tour[i+1];
       if(i+2>=n)continue;
-      costR=D[tour[i-1]][n1]+D[n2][tour[i+2]]-D[tour[i-1]][tour[i+2]];
-      for(j=0;j<n-2&&!found2;j++){
+      var costR=D[tour[i-1]][n1]+D[n2][tour[i+2]]-D[tour[i-1]][tour[i+2]];
+      for(var j=0;j<n-2&&!found2;j++){
         if(j>=i-1&&j<=i+2)continue;
         if(j+1>=n)continue;
-        costI=D[tour[j]][n1]+D[n2][tour[j+1]]-D[tour[j]][tour[j+1]];
+        var costI=D[tour[j]][n1]+D[n2][tour[j+1]]-D[tour[j]][tour[j+1]];
         if(costI-costR<-1e-9){
-          newTour=[];
-          for(var k=0;k<tour.length;k++) if(k!==i&&k!==i+1) newTour.push(tour[k]);
-          ins=j<i?j+1:j-1;
+          var newTour=[];
+          for(var k=0;k<tour.length;k++) if(k!==i&&k!==i+1)newTour.push(tour[k]);
+          var ins=j<i?j+1:j-1;
           if(ins<0)ins=0;if(ins>newTour.length)ins=newTour.length;
           newTour.splice(ins,0,n1,n2);
           tour=newTour;n=tour.length;imp=true;found2=true;
@@ -413,27 +784,39 @@ function algoOrOpt(D){
       }
     }
   }
+  // Asegurar que el inicio siga siendo sIdx
+  tour=rotateTour(tour,sIdx);
   return twoOpt(D,tour);
 }
 
-// ── ALGORITMO 3: Clarke-Wright Savings ────────────────────────
-function algoClarkeWright(D){
-  var n=D.length,cLat=0,cLon=0,i,j;
-  for(i=0;i<n;i++){cLat+=points[i].lat;cLon+=points[i].lon;}
-  cLat/=n;cLon/=n;
-  var depot={lat:cLat,lon:cLon};
-  var dDep=points.map(function(p){return hav(p,depot);});
+// ═══════════════════════════════════════════════════════════════
+//  ALGORITMO 3: Clarke-Wright Savings con inicio fijo
+// ═══════════════════════════════════════════════════════════════
+function algoClarkeWright(D,sIdx){
+  var n=D.length;
+  // Usar sIdx como depósito real para el savings
+  var dDep=[];
+  for(var i=0;i<n;i++) dDep.push(D[sIdx][i]);
   var savings=[];
-  for(i=0;i<n;i++) for(j=i+1;j<n;j++) savings.push({i:i,j:j,s:dDep[i]+dDep[j]-D[i][j]});
+  for(var i=0;i<n;i++){
+    if(i===sIdx)continue;
+    for(var j=i+1;j<n;j++){
+      if(j===sIdx)continue;
+      savings.push({i:i,j:j,s:dDep[i]+dDep[j]-D[i][j]});
+    }
+  }
   savings.sort(function(a,b){return b.s-a.s;});
-  var routes=[];for(i=0;i<n;i++) routes.push([i]);
-  var routeOf=[];for(i=0;i<n;i++) routeOf[i]=i;
-  function isEnd(r,node){return r[0]===node||r[r.length-1]===node;}
+  var routes=[];
+  for(var i=0;i<n;i++) routes.push(i===sIdx?null:[i]);
+  var routeOf=[];
+  for(var i=0;i<n;i++) routeOf[i]=i;
+  function isEnd(r,node){return r&&(r[0]===node||r[r.length-1]===node);}
   for(var s=0;s<savings.length;s++){
     var si=savings[s].i,sj=savings[s].j;
     var ri=routeOf[si],rj=routeOf[sj];
     if(ri===rj)continue;
     var R1=routes[ri],R2=routes[rj];
+    if(!R1||!R2)continue;
     if(!isEnd(R1,si)||!isEnd(R2,sj))continue;
     if(R1[0]===si)R1.reverse();
     if(R2[R2.length-1]===sj)R2.reverse();
@@ -441,24 +824,29 @@ function algoClarkeWright(D){
     routes[ri]=merged;routes[rj]=[];
     merged.forEach(function(node){routeOf[node]=ri;});
   }
-  var best=routes.reduce(function(a,b){return b.length>a.length?b:a;},[]);
-  if(best.length<n){
-    var inT=new Set(best);
-    for(i=0;i<n;i++){
+  var best=routes.reduce(function(a,b){if(!b)return a;return b.length>a.length?b:a;},[]);
+  // Añadir nodos faltantes
+  if(best.length<n-1){
+    var inT=new Set(best);inT.add(sIdx);
+    for(var i=0;i<n;i++){
       if(inT.has(i))continue;
       var bp=1,bc=Infinity;
-      for(j=0;j<best.length-1;j++){
+      for(var j=0;j<best.length-1;j++){
         var c=D[best[j]][i]+D[i][best[j+1]]-D[best[j]][best[j+1]];
         if(c<bc){bc=c;bp=j+1;}
       }
       best.splice(bp,0,i);inT.add(i);
     }
   }
-  return twoOpt(D,best);
+  // Prepend sIdx
+  var tour=[sIdx].concat(best.filter(function(x){return x!==sIdx;}));
+  return twoOpt(D,tour);
 }
 
-// ── ALGORITMO 4: Greedy Edge + 3-opt (double-bridge) ─────────
-function algoGreedy3opt(D){
+// ═══════════════════════════════════════════════════════════════
+//  ALGORITMO 4: Greedy Edge + double-bridge con inicio fijo
+// ═══════════════════════════════════════════════════════════════
+function algoGreedy3opt(D,sIdx){
   var n=D.length,edges=[],i,j;
   for(i=0;i<n;i++) for(j=i+1;j<n;j++) edges.push([D[i][j],i,j]);
   edges.sort(function(a,b){return a[0]-b[0];});
@@ -473,48 +861,55 @@ function algoGreedy3opt(D){
     if(ec<n-1&&find(ei)===find(ej))continue;
     adj[ei].push(ej);adj[ej].push(ei);
     degree[ei]++;degree[ej]++;
-    parent[find(ei)]=find(ej);
-    ec++;
+    parent[find(ei)]=find(ej);ec++;
   }
-  var start=0;
-  for(i=0;i<n;i++)if(degree[i]===1){start=i;break;}
-  var tour=[start],vis=new Uint8Array(n);vis[start]=1;
-  while(tour.length<n){
-    var cur=tour[tour.length-1],next=-1;
-    for(var k=0;k<adj[cur].length;k++){if(!vis[adj[cur][k]]){next=adj[cur][k];break;}}
+  var tour=[sIdx],vis=new Uint8Array(n);vis[sIdx]=1;
+  // Recorrer desde sIdx
+  var current=sIdx;
+  for(var step=0;step<n-1;step++){
+    var next=-1;
+    for(var k=0;k<adj[current].length;k++){if(!vis[adj[current][k]]){next=adj[current][k];break;}}
+    if(next===-1){
+      // Buscar cualquier nodo no visitado más cercano
+      var bd=Infinity;
+      for(var k=0;k<n;k++){if(!vis[k]&&D[current][k]<bd){bd=D[current][k];next=k;}}
+    }
     if(next===-1)break;
-    tour.push(next);vis[next]=1;
+    tour.push(next);vis[next]=1;current=next;
   }
-  if(tour.length<n){
-    var inT=new Set(tour);
-    for(i=0;i<n;i++){
-      if(inT.has(i))continue;
+  for(i=0;i<n;i++){
+    if(!vis[i]){
       var bp=1,bc=Infinity;
       for(j=0;j<tour.length-1;j++){
         var c=D[tour[j]][i]+D[i][tour[j+1]]-D[tour[j]][tour[j+1]];
         if(c<bc){bc=c;bp=j+1;}
       }
-      tour.splice(bp,0,i);inT.add(i);
+      tour.splice(bp,0,i);vis[i]=1;
     }
   }
   var best=twoOpt(D,tour),bestLen=tourLen(D,best);
-  // Double-bridge perturbation
+  // Double-bridge: no mover la posición 0
   for(var att=0;att<20;att++){
-    var pts4=[],pool=[];
-    for(i=1;i<n-1;i++)pool.push(i);
-    for(i=pool.length-1;i>0;i--){var r=Math.floor(Math.random()*(i+1));var tmp=pool[i];pool[i]=pool[r];pool[r]=tmp;}
-    pts4=pool.slice(0,4).sort(function(a,b){return a-b;});
+    if(n<5)break;
+    var pool=[];for(i=1;i<n-1;i++)pool.push(i);
+    for(i=pool.length-1;i>0;i--){var rr=Math.floor(Math.random()*(i+1));var tmp=pool[i];pool[i]=pool[rr];pool[rr]=tmp;}
+    var pts4=pool.slice(0,4).sort(function(a,b){return a-b;});
     if(pts4.length<4)continue;
     var a=pts4[0],b=pts4[1],c=pts4[2],d=pts4[3];
+    // Respetar índice 0 como inicio
+    if(a===0)continue;
     var cand=best.slice(0,a).concat(best.slice(c,d)).concat(best.slice(b,c)).concat(best.slice(a,b)).concat(best.slice(d));
+    if(cand[0]!==sIdx)cand=rotateTour(cand,sIdx);
     var imp2=twoOpt(D,cand);
     var len2=tourLen(D,imp2);
     if(len2<bestLen){bestLen=len2;best=imp2;}
   }
-  return best;
+  return rotateTour(best,sIdx);
 }
 
-// ── OSRM ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  OSRM
+// ═══════════════════════════════════════════════════════════════
 function fetchOSRM(order){
   var coords=order.map(function(i){return points[i].lon+','+points[i].lat;}).join(';');
   var url='https://router.project-osrm.org/trip/v1/driving/'+coords+'?roundtrip=false&source=first&destination=last&overview=full&geometries=geojson';
@@ -537,18 +932,26 @@ function drawDirect(order,color){
   routePolylines.push(L.polyline(ll,{color:color,weight:3,opacity:.6,dashArray:'8 5'}).addTo(map));
 }
 
-// ── CALCULAR TODO ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  CALCULAR TODOS LOS ALGORITMOS
+// ═══════════════════════════════════════════════════════════════
 function runAll(){
   if(points.length<2){setStatus('Necesitas al menos 2 puntos.','warn');return;}
   document.getElementById('btn-run').disabled=true;
-  setStatus('Construyendo matriz de distancias...','run');setProgress(3);
+  setStatus('Construyendo matriz con ponderación de prioridades...','run');setProgress(3);
   sleep(10).then(function(){
-    var D=buildD(points);
-    var fns=[algoNN2opt,algoOrOpt,algoClarkeWright,algoGreedy3opt];
+    var D=buildD(points,startIdx);
+    var Draw=buildDRaw(points);
+    var fns=[
+      function(d,s){return algoNN2opt(d,s);},
+      function(d,s){return algoOrOpt(d,s);},
+      function(d,s){return algoClarkeWright(d,s);},
+      function(d,s){return algoGreedy3opt(d,s);}
+    ];
     results=[];
     function runOne(idx){
       if(idx>=4){
-        var bestIdx=results.reduce(function(bi,r,i){return r.dist<results[bi].dist?i:bi;},0);
+        var bestIdx=results.reduce(function(bi,r,i){return r.rawDist<results[bi].rawDist?i:bi;},0);
         results.forEach(function(r,i){r.isBest=i===bestIdx;});
         setProgress(80);
         updateCompare(bestIdx);
@@ -561,8 +964,9 @@ function runAll(){
       setStatus('Calculando '+(idx+1)+'/4: '+NAMES[idx]+'...','run');
       setProgress(8+idx*18);
       sleep(20).then(function(){
-        var tour=fns[idx](D);
-        results.push({tour:tour,dist:tourLen(D,tour),label:NAMES[idx]});
+        var tour=fns[idx](D,startIdx);
+        var rawDist=tourLen(Draw,tour);
+        results.push({tour:tour,dist:tourLen(D,tour),rawDist:rawDist});
         runOne(idx+1);
       });
     }
@@ -570,7 +974,9 @@ function runAll(){
   });
 }
 
-// ── SELECCIONAR ALGORITMO ─────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  SELECCIONAR ALGORITMO
+// ═══════════════════════════════════════════════════════════════
 function selectAlgo(idx){
   if(!results[idx])return;
   activeAlgo=idx;
@@ -579,93 +985,163 @@ function selectAlgo(idx){
     b.className='algo-btn'+(i===idx?' selected':'')+(results[i]&&results[i].isBest?' best':'');
   }
   var r=results[idx],color=COLORS[idx];
-  renderMarkers(r.tour,idx);
+  renderMarkers(r.tour,idx,startIdx);
   renderList(r.tour);
   document.getElementById('stats').style.display='grid';
-  document.getElementById('sv-d').textContent=r.dist.toFixed(1)+' km*';
+  document.getElementById('sv-d').textContent=r.rawDist.toFixed(1)+' km*';
   document.getElementById('sv-s').textContent=r.tour.length;
-  document.getElementById('sv-t').textContent='—';
+  document.getElementById('sv-drive').textContent='—';
+  document.getElementById('sv-total').textContent='—';
+  document.getElementById('sv-schedule').textContent='Calculando...';
   document.getElementById('sv-a').textContent=NAMES[idx]+(r.isBest?' ✓ mejor':'');
-  setStatus('Trazando ruta "'+NAMES[idx]+'" por calles reales (OSRM)...','run');
+  setStatus('Trazando "'+NAMES[idx]+'" por calles reales (OSRM)...','run');
   fetchOSRM(r.tour).then(function(trip){
     drawOSRM(trip.geometry,color);
-    var km=(trip.distance/1000).toFixed(1),min=Math.round(trip.duration/60);
+    var km=(trip.distance/1000).toFixed(1);
+    var driveMin=Math.round(trip.duration/60);
+    var vm=parseInt(document.getElementById('visit-time').value);
+    var visitTotal=r.tour.length*vm;
+    var totalMin=driveMin+visitTotal;
+    var startT=document.getElementById('start-time').value;
+    var endT=addMinToTime(startT,totalMin);
     document.getElementById('sv-d').textContent=km+' km';
-    document.getElementById('sv-t').textContent=min+' min';
-    setStatus('"'+NAMES[idx]+'": '+km+' km reales · ~'+min+' min · '+r.tour.length+' paradas'+(r.isBest?' ← mejor ruta':''),'ok');
+    document.getElementById('sv-drive').textContent=fmtMin(driveMin);
+    document.getElementById('sv-total').textContent=fmtMin(totalMin);
+    document.getElementById('sv-schedule').textContent=
+      'Salida: '+startT+' → Llegada est: '+endT+
+      ' ('+r.tour.length+' visitas × '+vm+' min + '+fmtMin(driveMin)+' conducción)';
+    setStatus('"'+NAMES[idx]+'": '+km+' km · '+fmtMin(driveMin)+' conducción · '+fmtMin(totalMin)+' total (incl. visitas)'+(r.isBest?' ← mejor ruta':''),'ok');
+    // Actualizar ranking de compare con distancias reales
+    if(document.getElementById('compare-panel').style.display==='block'){
+      var bestIdx=results.reduce(function(bi,rv,i){return rv.rawDist<results[bi].rawDist?i:bi;},0);
+      updateCompare(bestIdx);
+    }
   }).catch(function(){
     drawDirect(r.tour,color);
-    document.getElementById('sv-t').textContent=Math.round(r.dist*3)+' min*';
-    setStatus('OSRM no disponible. "'+NAMES[idx]+'": ~'+r.dist.toFixed(1)+' km directos','warn');
+    var vm=parseInt(document.getElementById('visit-time').value);
+    var visitTotal=r.tour.length*vm;
+    var driveEst=Math.round(r.rawDist*3);
+    var totalMin=driveEst+visitTotal;
+    var startT=document.getElementById('start-time').value;
+    var endT=addMinToTime(startT,totalMin);
+    document.getElementById('sv-drive').textContent='~'+fmtMin(driveEst)+'*';
+    document.getElementById('sv-total').textContent='~'+fmtMin(totalMin)+'*';
+    document.getElementById('sv-schedule').textContent='Salida: '+startT+' → est. '+endT+' (* sin OSRM)';
+    setStatus('OSRM no disponible. "'+NAMES[idx]+'": ~'+r.rawDist.toFixed(1)+' km directos · ~'+fmtMin(totalMin)+' total','warn');
   });
   document.querySelectorAll('.cp-row').forEach(function(el,i){el.classList.toggle('cp-active',i===idx);});
 }
 
-// ── PANEL COMPARATIVO ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  COMPARE PANEL
+// ═══════════════════════════════════════════════════════════════
 function updateCompare(bestIdx){
   document.getElementById('compare-panel').style.display='block';
-  var rows=document.getElementById('cp-rows');
-  rows.innerHTML='';
+  var rows=document.getElementById('cp-rows');rows.innerHTML='';
   results.forEach(function(r,i){
     var div=document.createElement('div');
-    div.className='cp-row'+(r.isBest?' cp-best':'')+(i===activeAlgo?' cp-active':'');
-    var diff=r.isBest?'':'+'+((r.dist-results[bestIdx].dist)/results[bestIdx].dist*100).toFixed(1)+'%';
-    div.innerHTML='<div class="cp-algo-dot" style="background:'+COLORS[i]+'"></div>'
-      +'<span class="cp-name">'+NAMES[i]+'</span>'
-      +'<span class="cp-dist">'+r.dist.toFixed(1)+' km</span>'
-      +(r.isBest?'<span class="cp-badge">mejor</span>':'<span style="font-size:10px;color:#4a5a70">'+diff+'</span>');
+    div.className='cp-row'+(r.isBest?' ':'')+(i===activeAlgo?' cp-active':'');
+    var diff=r.isBest?'':'+'+((r.rawDist-results[bestIdx].rawDist)/results[bestIdx].rawDist*100).toFixed(1)+'%';
+    div.innerHTML=
+      '<div class="cp-dot" style="background:'+COLORS[i]+'"></div>'+
+      '<span class="cp-name">'+NAMES[i]+'</span>'+
+      '<span class="cp-dist">'+r.rawDist.toFixed(1)+' km</span>'+
+      (r.isBest?'<span class="cp-badge">mejor</span>':'<span style="font-size:10px;color:#4a5a70">'+diff+'</span>');
     div.onclick=(function(ii){return function(){selectAlgo(ii);};})(i);
     rows.appendChild(div);
   });
 }
 
-// ── LISTA LATERAL ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  LISTA LATERAL
+// ═══════════════════════════════════════════════════════════════
 function renderList(order){
   var list=document.getElementById('route-list');
   if(!points.length){list.innerHTML='<div class="empty">Ningún punto cargado</div>';return;}
   list.innerHTML='';
-  order.forEach(function(idx,i){
+  var vm=parseInt(document.getElementById('visit-time').value)||20;
+  var startT=document.getElementById('start-time').value||'08:00';
+  var accMin=0;
+  order.forEach(function(idx,pos){
     var p=points[idx];
-    var color=i===0?'#22aa55':i===order.length-1?'#dd3333':COLORS[activeAlgo];
+    var isStart=(idx===startIdx);
+    var sc=SEG_CONFIG[p.segment||'pequeño'];
+    var color=isStart?'#22aa55':sc.color;
+    var eta=addMinToTime(startT,accMin);
     var div=document.createElement('div');
-    div.className='ri';
-    div.innerHTML='<div class="rn" style="background:'+color+'">'+(i+1)+'</div><div><div class="rname">'+p.name+'</div>'+(p.address?'<div class="raddr">'+p.address+'</div>':'')+'</div>';
-    div.onclick=(function(pidx,ii,d){return function(){
+    div.className='ri'+(isStart?' start-point':'');
+    div.innerHTML=
+      '<div class="rn" style="background:'+color+'">'+(pos+1)+'</div>'+
+      '<div class="ri-body">'+
+        '<div class="rname">'+(isStart?'★ ':'')+p.name+'</div>'+
+        (p.address?'<div class="raddr">'+p.address+'</div>':'')+
+        '<div class="ri-meta">'+
+          '<span class="seg-badge" style="background:'+sc.color+'22;color:'+sc.color+'">'+sc.label+'</span>'+
+          '<span class="time-badge">ETA ~'+eta+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="ri-actions">'+
+        (!isStart?'<button class="ri-btn set-start" onclick="setStartFromList('+idx+',event)">→ Inicio</button>':'<span style="font-size:9px;color:#22aa55;padding:2px 3px">INICIO</span>')+
+      '</div>';
+    div.onclick=(function(pidx,ii,d){return function(e){
+      if(e.target.tagName==='BUTTON')return;
       map.setView([points[pidx].lat,points[pidx].lon],16);
       if(markersLayer[ii])markersLayer[ii].openPopup();
       document.querySelectorAll('.ri').forEach(function(el){el.classList.remove('active');});
       d.classList.add('active');
-    };})(idx,i,div);
+    };})(idx,pos,div);
     list.appendChild(div);
+    accMin+=vm; // sumar tiempo de visita para el siguiente ETA
   });
 }
 
-// ── EXPORTAR ─────────────────────────────────────────────────
+function setStartFromList(idx,e){
+  e.stopPropagation();
+  startIdx=idx;
+  document.getElementById('start-select').value=idx;
+  updateStartInfo();
+  var currentOrder=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  renderMarkers(currentOrder,activeAlgo,startIdx);
+  renderList(currentOrder);
+  setStatus('Inicio → '+points[idx].name+'. Vuelve a calcular para optimizar desde este punto.','ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EXPORTAR
+// ═══════════════════════════════════════════════════════════════
 function exportRoute(){
   if(!results[activeAlgo]||!points.length)return;
   var order=results[activeAlgo].tour;
-  var rows=[['Orden','Algoritmo','Nombre','Dirección','Latitud','Longitud']];
-  order.forEach(function(idx,i){
+  var vm=parseInt(document.getElementById('visit-time').value)||20;
+  var startT=document.getElementById('start-time').value||'08:00';
+  var rows=[['Orden','Nombre','Dirección','Segmento','Lat','Lon','ETA estimado','Tiempo visita (min)','Algoritmo']];
+  var accMin=0;
+  order.forEach(function(idx,pos){
     var p=points[idx];
-    rows.push([i+1,NAMES[activeAlgo],p.name,p.address,p.lat,p.lon]);
+    var sc=SEG_CONFIG[p.segment||'pequeño'];
+    rows.push([pos+1,p.name,p.address,sc.label,p.lat,p.lon,addMinToTime(startT,accMin),vm,NAMES[activeAlgo]]);
+    accMin+=vm;
   });
   var ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:6},{wch:20},{wch:30},{wch:35},{wch:12},{wch:12}];
+  ws['!cols']=[{wch:6},{wch:30},{wch:35},{wch:10},{wch:12},{wch:12},{wch:12},{wch:12},{wch:20}];
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Ruta');
   if(results.every(function(r){return r;})){
     var cmp=[['Algoritmo','Distancia directa (km)','Mejor']];
-    results.forEach(function(r,i){cmp.push([NAMES[i],r.dist.toFixed(2),r.isBest?'SÍ':'']);});
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cmp),'Comparativa');
+    results.forEach(function(r,i){cmp.push([NAMES[i],r.rawDist.toFixed(2),r.isBest?'SÍ':'']);});
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cmp),'Comparativa algoritmos');
   }
   XLSX.writeFile(wb,'ruta_lima_'+NAMES[activeAlgo].replace(/\s+/g,'_')+'.xlsx');
-  setStatus('Exportado con hoja comparativa de los 4 algoritmos.','ok');
+  setStatus('Exportado: ruta con ETA por cliente + comparativa de algoritmos.','ok');
 }
 
-// ── LIMPIAR ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  LIMPIAR
+// ═══════════════════════════════════════════════════════════════
 function clearAll(rs){
-  points=[];results=[null,null,null,null];activeAlgo=0;
+  points=[];results=[null,null,null,null];activeAlgo=0;startIdx=0;
   markersLayer.forEach(function(m){map.removeLayer(m);});markersLayer=[];
+  if(startMarker){map.removeLayer(startMarker);startMarker=null;}
   clearLines();
   document.getElementById('route-list').innerHTML='<div class="empty">Ningún punto cargado</div>';
   document.getElementById('stats').style.display='none';
@@ -673,19 +1149,15 @@ function clearAll(rs){
   document.getElementById('btn-run').disabled=true;
   document.getElementById('btn-clear').disabled=true;
   document.getElementById('btn-export').disabled=true;
+  document.getElementById('btn-seg').disabled=true;
   document.getElementById('pcnt').textContent='0 pts';
+  document.getElementById('start-select').innerHTML='<option value="-1">— Seleccionar cliente —</option>';
+  document.getElementById('start-info').textContent='Sin punto de inicio definido.';
+  document.getElementById('start-info').className='start-info';
+  document.getElementById('time-info').textContent='Configuración aplicada al calcular.';
   for(var i=0;i<4;i++) document.getElementById('ab-'+i).className='algo-btn'+(i===0?' selected':'');
-  if(rs!==false) setStatus('Listo.','idle');
+  if(rs!==false)setStatus('Listo.','idle');
 }
-
-// ── REDIMENSIONADO DE MAPA PARA RESPONSIVE ────────────────────
-window.addEventListener('resize', function(){
-  if(map){
-    setTimeout(function(){
-      map.invalidateSize();
-    }, 200);
-  }
-});
 </script>
 </body>
 </html>
