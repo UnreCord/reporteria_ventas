@@ -1,882 +1,663 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optimizador de Rutas Comerciales · Lima</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #1a1a2e;
-            color: #e0e0e0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden
-        }
-
-        /* HEADER */
-        #header {
-            padding: 10px 18px;
-            background: #0f0f1a;
-            border-bottom: 1px solid #2a2a4a;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-shrink: 0
-        }
-
-        #header svg {
-            flex-shrink: 0
-        }
-
-        #header h1 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #fff;
-            margin: 0
-        }
-
-        #header .sub {
-            font-size: 11px;
-            color: #7a8aaa;
-            margin-top: 1px
-        }
-
-        .badge-algo {
-            background: #1a3a6a;
-            color: #6ab0ff;
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 8px;
-            font-weight: 500;
-            vertical-align: middle
-        }
-
-        /* CONTROLS */
-        #controls {
-            padding: 9px 18px;
-            background: #0f0f1a;
-            border-bottom: 1px solid #2a2a4a;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-            flex-wrap: wrap
-        }
-
-        .btn {
-            font-size: 12px;
-            padding: 6px 14px;
-            border: 1px solid #2a3a5a;
-            border-radius: 6px;
-            background: #161628;
-            color: #c0d0e8;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-family: inherit;
-            white-space: nowrap
-        }
-
-        .btn:hover {
-            background: #1e2a4a;
-            border-color: #3a5a8a
-        }
-
-        .btn:disabled {
-            opacity: 0.35;
-            cursor: not-allowed
-        }
-
-        .btn.primary {
-            background: #1a4a9a;
-            color: #fff;
-            border-color: #2a6acc
-        }
-
-        .btn.primary:hover {
-            background: #1e55b0
-        }
-
-        .btn.success {
-            background: #1a5a2a;
-            color: #7dffaa;
-            border-color: #2a8a4a
-        }
-
-        .btn.success:hover {
-            background: #216a33
-        }
-
-        #upload-zone {
-            border: 1px dashed #2a3a6a;
-            border-radius: 6px;
-            padding: 6px 14px;
-            font-size: 12px;
-            color: #8aabcc;
-            cursor: pointer;
-            background: #0d1626;
-            transition: all 0.15s;
-            white-space: nowrap
-        }
-
-        #upload-zone:hover {
-            border-color: #4a7aaa;
-            color: #aaccee
-        }
-
-        #file-input {
-            display: none
-        }
-
-        /* PROGRESS + STATUS */
-        #progress {
-            height: 2px;
-            background: #1a1a3a;
-            flex-shrink: 0
-        }
-
-        #progress-bar {
-            height: 100%;
-            background: #2a7aff;
-            width: 0%;
-            transition: width 0.3s
-        }
-
-        #status-bar {
-            padding: 5px 18px;
-            background: #0d1220;
-            border-bottom: 1px solid #1a2a3a;
-            font-size: 11px;
-            color: #7a9ab8;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            flex-shrink: 0
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #3a4a6a;
-            flex-shrink: 0
-        }
-
-        .dot.ok {
-            background: #2aaa5a
-        }
-
-        .dot.loading {
-            background: #ffaa2a;
-            animation: blink 0.8s infinite
-        }
-
-        .dot.warn {
-            background: #ff6a2a
-        }
-
-        @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: 0.2
-            }
-        }
-
-        /* MAIN LAYOUT */
-        #main {
-            display: flex;
-            flex: 1;
-            overflow: hidden
-        }
-
-        #map {
-            flex: 1;
-            z-index: 1
-        }
-
-        /* SIDEBAR */
-        #sidebar {
-            width: 270px;
-            background: #0f0f1a;
-            border-left: 1px solid #1a2a3a;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            flex-shrink: 0
-        }
-
-        #sb-header {
-            padding: 10px 14px;
-            border-bottom: 1px solid #1a2a3a;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #c0d4f0
-        }
-
-        .count-badge {
-            background: #1a3a6a;
-            color: #6aaeff;
-            font-size: 10px;
-            padding: 2px 7px;
-            border-radius: 10px;
-            font-weight: 600
-        }
-
-        #stats-panel {
-            padding: 10px 12px;
-            border-bottom: 1px solid #1a2a3a;
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 7px
-        }
-
-        .stat {
-            background: #0d1626;
-            border: 1px solid #1a2a4a;
-            border-radius: 6px;
-            padding: 7px 10px
-        }
-
-        .stat-l {
-            font-size: 10px;
-            color: #5a7a9a;
-            margin-bottom: 2px
-        }
-
-        .stat-v {
-            font-size: 17px;
-            font-weight: 600;
-            color: #c8e0ff
-        }
-
-        .stat-v.sm {
-            font-size: 11px;
-            padding-top: 3px;
-            line-height: 1.4
-        }
-
-        #route-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 6px 0
-        }
-
-        #route-list::-webkit-scrollbar {
-            width: 4px
-        }
-
-        #route-list::-webkit-scrollbar-track {
-            background: #0d1220
-        }
-
-        #route-list::-webkit-scrollbar-thumb {
-            background: #2a3a5a;
-            border-radius: 2px
-        }
-
-        .route-item {
-            padding: 8px 14px;
-            border-bottom: 1px solid #141428;
-            cursor: pointer;
-            display: flex;
-            align-items: flex-start;
-            gap: 9px;
-            transition: background 0.1s
-        }
-
-        .route-item:hover {
-            background: #141830
-        }
-
-        .route-item.active {
-            background: #0d1e40
-        }
-
-        .rnum {
-            width: 23px;
-            height: 23px;
-            border-radius: 50%;
-            background: #1a4aaa;
-            color: #fff;
-            font-size: 11px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 1px
-        }
-
-        .rname {
-            font-size: 12px;
-            font-weight: 600;
-            color: #c8d8f0
-        }
-
-        .raddr {
-            font-size: 11px;
-            color: #6a8aaa;
-            margin-top: 2px;
-            line-height: 1.4
-        }
-
-        .empty {
-            padding: 30px 16px;
-            text-align: center;
-            color: #3a5a7a;
-            font-size: 13px
-        }
-
-        #algo-info {
-            padding: 10px 14px;
-            border-top: 1px solid #1a2a3a;
-            font-size: 11px;
-            color: #4a6a8a;
-            line-height: 1.6
-        }
-
-        #algo-info strong {
-            color: #6a9acc
-        }
-
-        /* LEAFLET CUSTOMIZATION */
-        .leaflet-popup-content-wrapper {
-            background: #0f1828;
-            border: 1px solid #2a4a7a;
-            color: #c0d8f0;
-            border-radius: 8px
-        }
-
-        .leaflet-popup-tip {
-            background: #0f1828
-        }
-
-        .leaflet-popup-content {
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 12px;
-            margin: 10px 14px
-        }
-
-        .leaflet-popup-content strong {
-            color: #6aaeff
-        }
-
-        .leaflet-popup-close-button {
-            color: #6a8aaa !important
-        }
-
-        .leaflet-control-zoom a {
-            background: #0f1828 !important;
-            border-color: #2a3a5a !important;
-            color: #8aaace !important
-        }
-
-        .leaflet-control-zoom a:hover {
-            background: #1a2a4a !important
-        }
-
-        .leaflet-control-attribution {
-            background: rgba(10, 12, 25, 0.8) !important;
-            color: #4a6a8a !important;
-            font-size: 10px !important
-        }
-
-        .leaflet-control-attribution a {
-            color: #4a7aaa !important
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optimizador de Rutas · Lima</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121e;color:#dde4f0;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+#header{padding:9px 16px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:12px;flex-shrink:0}
+#header h1{font-size:15px;font-weight:600;color:#fff}
+#header .sub{font-size:10px;color:#5a6a8a;margin-top:1px}
+.tag{background:#162040;color:#4a90d9;font-size:10px;padding:2px 7px;border-radius:8px;margin-left:6px;font-weight:600;vertical-align:middle}
+#toolbar{padding:8px 14px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.btn{font-size:12px;padding:5px 12px;border:1px solid #263050;border-radius:5px;background:#131826;color:#b0c4de;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.btn:hover{background:#1a2540;border-color:#3a5a88}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.go{background:#1a4a9a;color:#fff;border-color:#2a65cc;font-weight:600}
+.btn.go:hover{background:#1e55b5}
+.btn.exp{background:#1a4a2a;color:#6dffaa;border-color:#2a7a44}
+.btn.exp:hover{background:#1e5a32}
+#upload-zone{border:1px dashed #263a60;border-radius:5px;padding:5px 12px;font-size:12px;color:#5a80aa;cursor:pointer;background:#0d1220;transition:all .15s}
+#upload-zone:hover{border-color:#4a72a0;color:#8aacd0}
+#file-input{display:none}
+.sep{width:1px;height:22px;background:#1e2540;flex-shrink:0}
+#algo-bar{padding:6px 14px;background:#0d1020;border-bottom:1px solid #1a2035;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.algo-btn{font-size:11px;padding:4px 11px;border:1px solid #263050;border-radius:14px;background:#131826;color:#7a94b8;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.algo-btn:hover{background:#1a2540;color:#aac4e0}
+.algo-btn.selected{background:#1a3a7a;color:#6aaeff;border-color:#2a5acc;font-weight:600}
+.algo-btn.best{border-color:#2a7a44 !important;color:#5aff8a !important}
+.algo-label{font-size:10px;color:#3a5070;margin-right:4px;white-space:nowrap}
+#progress{height:2px;background:#0d1020;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,#2a7aff,#ff6b35);width:0%;transition:width .3s}
+#status-bar{padding:4px 16px;background:#090910;border-bottom:1px solid #141820;font-size:11px;color:#4a6a88;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.dot{width:6px;height:6px;border-radius:50%;background:#2a3a50;flex-shrink:0}
+.dot.ok{background:#22aa55}
+.dot.run{background:#ffaa22;animation:blink .7s infinite}
+.dot.warn{background:#ff6022}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+#main{display:flex;flex:1;overflow:hidden}
+#map{flex:1;z-index:1}
+#sidebar{width:275px;background:#0a0a16;border-left:1px solid #141820;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+#sb-top{padding:9px 13px;border-bottom:1px solid #141820;display:flex;align-items:center;justify-content:space-between}
+#sb-top .title{font-size:12px;font-weight:600;color:#aabfd8}
+.cnt{background:#162040;color:#4a90d9;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600}
+#stats{padding:9px 11px;border-bottom:1px solid #141820;display:none;grid-template-columns:1fr 1fr;gap:6px}
+.sc{background:#0d1626;border:1px solid #1a2a40;border-radius:5px;padding:6px 9px}
+.sc-l{font-size:10px;color:#3a5a78;margin-bottom:2px}
+.sc-v{font-size:16px;font-weight:700;color:#b0d0ff}
+.sc-v.sm{font-size:10px;padding-top:3px;line-height:1.5;color:#7aaad8}
+#compare-panel{padding:8px 11px;border-bottom:1px solid #141820;display:none}
+.cp-title{font-size:10px;color:#3a5a78;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.cp-row{display:flex;align-items:center;gap:6px;padding:4px 6px;border-bottom:1px solid #0e1622;cursor:pointer;transition:background .1s;border-radius:4px}
+.cp-row:hover{background:#0d1830}
+.cp-row.cp-active{background:#0d1e40}
+.cp-algo-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cp-name{font-size:11px;font-weight:600;color:#8aacd0;flex:1}
+.cp-dist{font-size:11px;color:#5a8ab0;text-align:right;min-width:55px}
+.cp-badge{font-size:9px;padding:1px 5px;border-radius:8px;background:#1a3a1a;color:#5aff8a;font-weight:600}
+#route-list{flex:1;overflow-y:auto;padding:4px 0}
+#route-list::-webkit-scrollbar{width:3px}
+#route-list::-webkit-scrollbar-track{background:#0a0a16}
+#route-list::-webkit-scrollbar-thumb{background:#1e2a40;border-radius:2px}
+.ri{padding:7px 13px;border-bottom:1px solid #0e121e;cursor:pointer;display:flex;align-items:flex-start;gap:8px;transition:background .1s}
+.ri:hover{background:#0e1626}
+.ri.active{background:#0d1e3a}
+.rn{width:22px;height:22px;border-radius:50%;background:#1a44aa;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.rname{font-size:12px;font-weight:600;color:#b8d0e8;line-height:1.3}
+.raddr{font-size:10px;color:#4a6a88;margin-top:1px;line-height:1.4}
+.empty{padding:28px 14px;text-align:center;color:#2a3a50;font-size:12px}
+#algo-desc{padding:9px 13px;border-top:1px solid #141820;font-size:10px;color:#3a5a78;line-height:1.7}
+#algo-desc strong{color:#5a80aa}
+.leaflet-popup-content-wrapper{background:#0d1626;border:1px solid #1e3a60;color:#b0cce8;border-radius:7px}
+.leaflet-popup-tip{background:#0d1626}
+.leaflet-popup-content{font-family:'Segoe UI',sans-serif;font-size:12px;margin:9px 12px}
+.leaflet-popup-close-button{color:#4a6a8a!important}
+.leaflet-control-zoom a{background:#0d1220!important;border-color:#1e2a40!important;color:#6a8aae!important}
+.leaflet-control-zoom a:hover{background:#141e30!important}
+.leaflet-control-attribution{background:rgba(8,10,20,.8)!important;color:#3a5070!important;font-size:10px!important}
+.leaflet-control-attribution a{color:#3a6090!important}
+</style>
 </head>
-
 <body>
-
-    <div id="header">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="13" stroke="#2a7aff" stroke-width="1.5" />
-            <circle cx="14" cy="14" r="4" fill="#2a7aff" />
-            <path d="M14 3v4M14 21v4M3 14h4M21 14h4" stroke="#2a7aff" stroke-width="1.5" stroke-linecap="round" />
-            <circle cx="8" cy="8" r="2" fill="#ff6b35" />
-            <circle cx="20" cy="8" r="2" fill="#ff6b35" />
-            <circle cx="8" cy="20" r="2" fill="#ff6b35" />
-            <circle cx="20" cy="20" r="2" fill="#ff6b35" />
-        </svg>
-        <div>
-            <h1>Optimizador de Rutas Comerciales <span class="badge-algo">TSP · 2-opt · OSRM</span></h1>
-            <div class="sub">Lima Metropolitana · Mapa satelital sin API keys · OpenStreetMap routing</div>
-        </div>
+<div id="header">
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <circle cx="13" cy="13" r="12" stroke="#2a7aff" stroke-width="1.4"/>
+    <path d="M7 13 Q10 7 13 13 Q16 19 19 13" stroke="#ff6b35" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="7" cy="13" r="2.2" fill="#22aa55"/>
+    <circle cx="19" cy="13" r="2.2" fill="#dd3333"/>
+  </svg>
+  <div>
+    <h1>Optimizador de Rutas Comerciales <span class="tag">Lima Metro</span></h1>
+    <div class="sub">4 algoritmos comparables · Satelital ESRI · OSRM routing · Sin API keys</div>
+  </div>
+</div>
+<div id="toolbar">
+  <label id="upload-zone" for="file-input">↑ Subir Excel / CSV</label>
+  <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
+  <button class="btn" onclick="loadDemo()">🗺 Demo 35 puntos Lima</button>
+  <div class="sep"></div>
+  <button class="btn go" id="btn-run" onclick="runAll()" disabled>⚡ Calcular todos los algoritmos</button>
+  <button class="btn" id="btn-clear" onclick="clearAll()" disabled>✕ Limpiar</button>
+  <button class="btn exp" id="btn-export" onclick="exportRoute()" disabled>↓ Exportar</button>
+</div>
+<div id="algo-bar">
+  <span class="algo-label">Ver ruta:</span>
+  <button class="algo-btn selected" id="ab-0" onclick="selectAlgo(0)">① NN + 2-opt</button>
+  <button class="algo-btn" id="ab-1" onclick="selectAlgo(1)">② Or-opt</button>
+  <button class="algo-btn" id="ab-2" onclick="selectAlgo(2)">③ Clarke-Wright</button>
+  <button class="algo-btn" id="ab-3" onclick="selectAlgo(3)">④ Greedy + 3-opt</button>
+</div>
+<div id="progress"><div id="progress-bar"></div></div>
+<div id="status-bar"><div class="dot" id="sdot"></div><span id="stxt">Carga un Excel o usa el Demo, luego presiona "Calcular todos los algoritmos".</span></div>
+<div id="main">
+  <div id="map"></div>
+  <div id="sidebar">
+    <div id="sb-top">
+      <span class="title">Orden de visita</span>
+      <span class="cnt" id="pcnt">0 pts</span>
     </div>
-
-    <div id="controls">
-        <label id="upload-zone" for="file-input">
-            ↑ Subir Excel (.xlsx / .csv)
-        </label>
-        <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
-        <button class="btn" onclick="loadDemo()">🗺 Demo Miraflores (10 pts)</button>
-        <button class="btn primary" id="btn-optimize" onclick="runOptimize()" disabled>⚡ Optimizar ruta</button>
-        <button class="btn" id="btn-clear" onclick="clearAll()" disabled>✕ Limpiar</button>
-        <button class="btn success" id="btn-export" onclick="exportRoute()" disabled>↓ Exportar orden (.xlsx)</button>
+    <div id="stats">
+      <div class="sc"><div class="sc-l">Distancia</div><div class="sc-v" id="sv-d">—</div></div>
+      <div class="sc"><div class="sc-l">Paradas</div><div class="sc-v" id="sv-s">—</div></div>
+      <div class="sc"><div class="sc-l">Tiempo est.</div><div class="sc-v" id="sv-t">—</div></div>
+      <div class="sc"><div class="sc-l">Algoritmo activo</div><div class="sc-v sm" id="sv-a">—</div></div>
     </div>
-
-    <div id="progress">
-        <div id="progress-bar"></div>
+    <div id="compare-panel">
+      <div class="cp-title">Comparar algoritmos</div>
+      <div id="cp-rows"></div>
     </div>
-    <div id="status-bar">
-        <div class="dot" id="sdot"></div><span id="stxt">Listo. Carga un Excel con columnas: nombre, dirección, lat, lon
-            (o coordenadas). O prueba el Demo.</span>
+    <div id="route-list"><div class="empty">Ningún punto cargado</div></div>
+    <div id="algo-desc">
+      <strong>① NN+2opt</strong> parte del mejor inicio posible · <strong>② Or-opt</strong> reinserta nodos y pares · <strong>③ Clarke-Wright</strong> combina rutas por ahorro máximo · <strong>④ Greedy+3opt</strong> construye desde aristas más cortas + perturbación doble. El mejor se marca en verde ✓.
     </div>
+  </div>
+</div>
 
-    <div id="main">
-        <div id="map"></div>
-        <div id="sidebar">
-            <div id="sb-header">
-                Puntos de visita
-                <span class="count-badge" id="point-count">0 pts</span>
-            </div>
-            <div id="stats-panel">
-                <div class="stat">
-                    <div class="stat-l">Distancia total</div>
-                    <div class="stat-v" id="sv-dist">—</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-l">Paradas</div>
-                    <div class="stat-v" id="sv-stops">—</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-l">Tiempo estimado</div>
-                    <div class="stat-v" id="sv-time">—</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-l">Algoritmo</div>
-                    <div class="stat-v sm" id="sv-algo">—</div>
-                </div>
-            </div>
-            <div id="route-list">
-                <div class="empty">Ningún punto cargado</div>
-            </div>
-            <div id="algo-info">
-                <strong>Nearest Neighbor</strong> genera ruta inicial · <strong>2-opt</strong> mejora iterativamente ·
-                <strong>OSRM</strong> traza calles reales de Lima via OpenStreetMap
-            </div>
-        </div>
-    </div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+var map, points=[], results=[null,null,null,null], activeAlgo=0, markersLayer=[], routePolylines=[];
+var NAMES=['NN + 2-opt','Or-opt','Clarke-Wright Savings','Greedy + 3-opt'];
+var COLORS=['#ff6b35','#22aaff','#ffdd22','#cc44ff'];
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script>
-        // ─── Estado global ────────────────────────────────────────────────
-        let map, points = [], optimizedOrder = [], markersLayer = [], routePolylines = [];
+// ── MAPA ──────────────────────────────────────────────────────
+(function(){
+  map=L.map('map',{center:[-12.1,-77.03],zoom:13});
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri',maxZoom:19}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CARTO',maxZoom:19,opacity:0.8}).addTo(map);
+})();
 
-        // ─── Inicializar mapa ─────────────────────────────────────────────
-        (function initMap() {
-            map = L.map('map', { center: [-12.046374, -77.042793], zoom: 13, zoomControl: true });
+// ── UI ────────────────────────────────────────────────────────
+function setStatus(msg,s){
+  document.getElementById('stxt').textContent=msg;
+  var d=document.getElementById('sdot');
+  d.className='dot '+({run:'run',ok:'ok',warn:'warn'}[s]||'');
+}
+function setProgress(p){document.getElementById('progress-bar').style.width=p+'%';}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
 
-            // Capa satelital ESRI (sin API key)
-            L.tileLayer(
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                { attribution: 'Esri, Maxar, GeoEye', maxZoom: 19 }
-            ).addTo(map);
+// ── FILE INPUT ────────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f) return;
+  setStatus('Leyendo "'+f.name+'"...','run'); setProgress(10);
+  var r=new FileReader();
+  r.onload=function(ev){
+    try{
+      var wb=XLSX.read(ev.target.result,{type:'array'});
+      var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+      setProgress(40);
+      var pts=parseRows(rows);
+      loadPoints(pts);
+      setStatus(pts.length+' puntos cargados desde "'+f.name+'"','ok');
+      setProgress(100); setTimeout(function(){setProgress(0);},700);
+    }catch(err){setStatus('Error: '+err.message,'warn');setProgress(0);}
+  };
+  r.readAsArrayBuffer(f);
+  this.value='';
+});
 
-            // Capa de etiquetas encima (calles, nombres)
-            L.tileLayer(
-                'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-                { attribution: '© OpenStreetMap, © CARTO', maxZoom: 19, opacity: 0.85 }
-            ).addTo(map);
-        })();
+function findCol(hdr){
+  var keys=Array.prototype.slice.call(arguments,1);
+  for(var k=0;k<keys.length;k++){
+    var i=hdr.findIndex(function(h){return h.indexOf(keys[k])>=0||keys[k].indexOf(h)>=0;});
+    if(i>=0) return i;
+  }
+  return -1;
+}
+function toNum(v){
+  if(v===null||v===undefined||v==='') return null;
+  var n=parseFloat(String(v).replace(',','.'));
+  return isNaN(n)?null:n;
+}
+function splitCoord(s){
+  var m=String(s).trim().match(/(-?\d{1,3}\.?\d*)[,\s;|]+(-?\d{1,3}\.?\d*)/);
+  return m?[parseFloat(m[1]),parseFloat(m[2])]:null;
+}
+function parseRows(rows){
+  if(!rows||rows.length<2) throw new Error('Archivo vacío.');
+  var hdr=rows[0].map(function(h){return String(h||'').toLowerCase().trim();});
+  var iN=findCol(hdr,'nombre','name','cliente','razon','comercio','tienda','empresa','negocio','local');
+  var iA=findCol(hdr,'direccion','address','calle','domicilio','ubicacion','dir');
+  var iC=findCol(hdr,'coordenadas','coords','coordinates','latlong','latlng','google');
+  var iLat=findCol(hdr,'lat','latitude','latitud','y');
+  var iLon=findCol(hdr,'lng','lon','long','longitude','longitud','x');
+  var out=[];
+  for(var i=1;i<rows.length;i++){
+    var row=rows[i];
+    if(!row||row.every(function(c){return !c;})) continue;
+    var lat=null,lon=null;
+    if(iC>=0&&row[iC]){var p=splitCoord(row[iC]);if(p){lat=p[0];lon=p[1];}}
+    if((lat===null||lon===null)&&iLat>=0&&iLon>=0){
+      var la=toNum(row[iLat]),lo=toNum(row[iLon]);
+      if(la!==null&&lo!==null){lat=la;lon=lo;}
+    }
+    if(lat===null||lon===null) continue;
+    if(lat<-13||lat>-11||lon<-77.5||lon>-76.5) continue;
+    out.push({id:i,name:(iN>=0&&row[iN])?String(row[iN]).trim():'Punto '+i,
+              address:(iA>=0&&row[iA])?String(row[iA]).trim():'',lat:lat,lon:lon});
+  }
+  if(out.length<2) throw new Error('No se encontraron coordenadas válidas en Lima. Verifica columnas: lat, lon (o "coordenadas" con formato -12.046, -77.042).');
+  return out;
+}
 
-        // ─── UI helpers ───────────────────────────────────────────────────
-        function setStatus(msg, state = 'idle') {
-            document.getElementById('stxt').textContent = msg;
-            const d = document.getElementById('sdot');
-            d.className = 'dot ' + ({ loading: 'loading', ok: 'ok', warn: 'warn' }[state] || '');
+// ── DEMO ──────────────────────────────────────────────────────
+function loadDemo(){
+  loadPoints([
+    {id:1,name:'Óptica Miraflores',address:'Av. Larco 345',lat:-12.1214,lon:-77.0300},
+    {id:2,name:'Ferretería La Victoria',address:'Av. Aviación 2801',lat:-12.0816,lon:-77.0132},
+    {id:3,name:'Bodega San Borja Sur',address:'Av. San Luis 2500',lat:-12.1050,lon:-76.9990},
+    {id:4,name:'Distribuidora Surco',address:'Av. Caminos del Inca 480',lat:-12.1320,lon:-76.9980},
+    {id:5,name:'Panadería Don Pepe',address:'Av. Benavides 2900',lat:-12.1380,lon:-77.0100},
+    {id:6,name:'Minimarket Chorrillos',address:'Av. Huaylas 120',lat:-12.1600,lon:-77.0010},
+    {id:7,name:'Farmacia Barranco',address:'Av. Grau 500',lat:-12.1490,lon:-77.0210},
+    {id:8,name:'Librería Chorrillos 2',address:'Av. Defensores 200',lat:-12.1700,lon:-77.0130},
+    {id:9,name:'Bodega La Marina',address:'Av. La Marina 3500',lat:-12.1350,lon:-77.0650},
+    {id:10,name:'Ferretería Surquillo',address:'Av. Tomás Marsano 100',lat:-12.1450,lon:-77.0300},
+    {id:11,name:'Tienda Miraflores C',address:'Calle Alcanfores 572',lat:-12.1270,lon:-77.0290},
+    {id:12,name:'Supermercado Wong S',address:'Av. Benavides 3600',lat:-12.1290,lon:-77.0200},
+    {id:13,name:'Bazar Surquillo N',address:'Jr. Canepa 120',lat:-12.1230,lon:-77.0380},
+    {id:14,name:'Distribuidora Lince',address:'Av. Arequipa 3200',lat:-12.0980,lon:-77.0310},
+    {id:15,name:'Bodega San Isidro',address:'Calle Las Begonias 200',lat:-12.0940,lon:-77.0420},
+    {id:16,name:'Librería San Isidro',address:'Av. Javier Prado 900',lat:-12.0970,lon:-77.0350},
+    {id:17,name:'Farmacia Lince',address:'Av. Arequipa 3500',lat:-12.0960,lon:-77.0330},
+    {id:18,name:'Tienda Jesús María',address:'Av. Cuba 1100',lat:-12.0910,lon:-77.0360},
+    {id:19,name:'Bodega Magdalena',address:'Av. Brasil 3500',lat:-12.0880,lon:-77.0440},
+    {id:20,name:'Minimarket San Miguel',address:'Av. La Mar 700',lat:-12.0870,lon:-77.0500},
+    {id:21,name:'Distribuidora Pueblo L.',address:'Av. Javier Prado E 500',lat:-12.0900,lon:-77.0290},
+    {id:22,name:'Ferretería Breña',address:'Av. Arica 500',lat:-12.0640,lon:-77.0440},
+    {id:23,name:'Bodega Miraflores D',address:'Av. Ricardo Palma 300',lat:-12.1170,lon:-77.0280},
+    {id:24,name:'Bazar Surco Este',address:'Av. El Polo 700',lat:-12.1280,lon:-77.0050},
+    {id:25,name:'Panadería Surco C',address:'Calle Monte Rosa 180',lat:-12.1300,lon:-77.0080},
+    {id:26,name:'Minimarket La Molina',address:'Av. La Molina 1200',lat:-12.1340,lon:-76.9900},
+    {id:27,name:'Tienda Surco Oeste',address:'Av. Primavera 800',lat:-12.1200,lon:-77.0050},
+    {id:28,name:'Bodega San Borja N',address:'Av. San Borja Norte 600',lat:-12.1020,lon:-77.0070},
+    {id:29,name:'Farmacia Surquillo 2',address:'Av. Angamos Este 1200',lat:-12.1060,lon:-77.0130},
+    {id:30,name:'Distribuidora San Borja',address:'Av. Javier Prado E 3000',lat:-12.0990,lon:-77.0060},
+    {id:31,name:'Bodega Ate W',address:'Av. La Cultura 300',lat:-12.0750,lon:-77.0100},
+    {id:32,name:'Tienda Surquillo Nor',address:'Av. Tomás Marsano 500',lat:-12.0880,lon:-77.0190},
+    {id:33,name:'Ferretería San Borja 2',address:'Av. Guardia Civil 880',lat:-12.0900,lon:-77.0140},
+    {id:34,name:'Minimarket Santiago',address:'Av. Javier Prado E 5200',lat:-12.0680,lon:-76.9910},
+    {id:35,name:'Bodega La Encalada',address:'Av. La Encalada 250',lat:-12.1100,lon:-77.0010}
+  ]);
+  setStatus('Demo 35 puntos cargado. Haz clic en "Calcular todos los algoritmos".','ok');
+}
+
+// ── CARGAR PUNTOS ─────────────────────────────────────────────
+function loadPoints(pts){
+  clearAll(false);
+  points=pts;
+  renderMarkers(pts.map(function(_,i){return i;}),0);
+  renderList(pts.map(function(_,i){return i;}));
+  document.getElementById('btn-run').disabled=false;
+  document.getElementById('btn-clear').disabled=false;
+  document.getElementById('pcnt').textContent=pts.length+' pts';
+  if(pts.length>0){
+    var lats=pts.map(function(p){return p.lat;}), lons=pts.map(function(p){return p.lon;});
+    map.fitBounds([[Math.min.apply(null,lats),Math.min.apply(null,lons)],[Math.max.apply(null,lats),Math.max.apply(null,lons)]],{padding:[50,50]});
+  }
+}
+
+// ── MARCADORES ────────────────────────────────────────────────
+function makeIcon(num,bg){
+  return L.divIcon({
+    html:'<div style="width:26px;height:26px;border-radius:50%;background:'+bg+';border:2px solid rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;box-shadow:0 2px 7px rgba(0,0,0,.5)">'+num+'</div>',
+    className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-15]
+  });
+}
+function renderMarkers(order,aIdx){
+  markersLayer.forEach(function(m){map.removeLayer(m);}); markersLayer=[];
+  var base=COLORS[aIdx];
+  order.forEach(function(idx,i){
+    var p=points[idx];
+    var color=i===0?'#22aa55':i===order.length-1?'#dd3333':base;
+    var m=L.marker([p.lat,p.lon],{icon:makeIcon(i+1,color)}).addTo(map);
+    m.bindPopup('<strong style="color:#6aaeff">'+(i+1)+'. '+p.name+'</strong>'+(p.address?'<br><span style="color:#6a8aaa">'+p.address+'</span>':'')+'<br><span style="color:#3a5a7a;font-size:10px">'+p.lat.toFixed(5)+', '+p.lon.toFixed(5)+'</span>');
+    markersLayer.push(m);
+  });
+}
+function clearLines(){routePolylines.forEach(function(l){map.removeLayer(l);});routePolylines=[];}
+
+// ── DISTANCIA ─────────────────────────────────────────────────
+function hav(a,b){
+  var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
+  var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+function buildD(pts){
+  var n=pts.length,D=[];
+  for(var i=0;i<n;i++){D[i]=new Float64Array(n);}
+  for(var i=0;i<n;i++) for(var j=i+1;j<n;j++) D[i][j]=D[j][i]=hav(pts[i],pts[j]);
+  return D;
+}
+function tourLen(D,t){var d=0;for(var i=0;i<t.length-1;i++)d+=D[t[i]][t[i+1]];return d;}
+
+// ── 2-OPT ─────────────────────────────────────────────────────
+function twoOpt(D,tour){
+  var n=tour.length,best=tour.slice(),imp=true,it=0,tmp;
+  while(imp&&it<400){
+    imp=false;it++;
+    for(var i=0;i<n-1;i++){
+      for(var j=i+2;j<n;j++){
+        if(i===0&&j===n-1)continue;
+        var gain=D[best[i]][best[i+1]]+D[best[j]][best[(j+1)%n]]-D[best[i]][best[j]]-D[best[i+1]][best[(j+1)%n]];
+        if(gain>1e-9){
+          var lo=i+1,hi=j;
+          while(lo<hi){tmp=best[lo];best[lo]=best[hi];best[hi]=tmp;lo++;hi--;}
+          imp=true;
         }
-        function setProgress(p) { document.getElementById('progress-bar').style.width = p + '%'; }
-        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+      }
+    }
+  }
+  return best;
+}
 
-        // ─── Leer archivo Excel / CSV ──────────────────────────────────────
-        document.getElementById('file-input').addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            setStatus('Leyendo archivo "' + file.name + '"...', 'loading');
-            setProgress(10);
-            const reader = new FileReader();
-            reader.onload = function (ev) {
-                try {
-                    const wb = XLSX.read(ev.target.result, { type: 'array' });
-                    const ws = wb.Sheets[wb.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-                    setProgress(40);
-                    const pts = parseRows(rows);
-                    loadPoints(pts);
-                    setStatus(pts.length + ' puntos cargados desde "' + file.name + '"', 'ok');
-                    setProgress(100); setTimeout(() => setProgress(0), 800);
-                } catch (err) {
-                    setStatus('Error al leer: ' + err.message, 'warn');
-                    setProgress(0);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-            this.value = '';
-        });
+// ── ALGORITMO 1: NN multi-start + 2-opt ───────────────────────
+function algoNN2opt(D){
+  var n=D.length,bestTour=null,bestLen=Infinity;
+  var starts=Math.min(n,10);
+  for(var s=0;s<starts;s++){
+    var visited=new Uint8Array(n),tour=[s];visited[s]=1;
+    for(var k=1;k<n;k++){
+      var cur=tour[tour.length-1],best=-1,bd=Infinity;
+      for(var j=0;j<n;j++) if(!visited[j]&&D[cur][j]<bd){bd=D[cur][j];best=j;}
+      tour.push(best);visited[best]=1;
+    }
+    var len=tourLen(D,tour);
+    if(len<bestLen){bestLen=len;bestTour=tour.slice();}
+  }
+  return twoOpt(D,bestTour);
+}
 
-        // ─── Parser inteligente de columnas ───────────────────────────────
-        function parseRows(rows) {
-            if (!rows || rows.length < 2) throw new Error('El archivo está vacío o tiene solo encabezado.');
-            const header = rows[0].map(h => String(h || '').toLowerCase().trim());
-
-            // Detectar columnas por nombre (flexible)
-            function col(...keys) {
-                for (const k of keys) {
-                    const i = header.findIndex(h => h.includes(k) || k.includes(h));
-                    if (i >= 0) return i;
-                }
-                return -1;
-            }
-
-            const iName = col('nombre', 'name', 'cliente', 'razon social', 'comercio', 'tienda', 'empresa', 'negocio', 'local');
-            const iAddr = col('direccion', 'address', 'calle', 'domicilio', 'ubicacion', 'dir');
-            const iCoord = col('coordenadas', 'coords', 'coordinates', 'latlong', 'latlng', 'google maps', 'gmaps');
-            const iLat = col('lat', 'latitude', 'latitud', 'y');
-            const iLon = col('lng', 'lon', 'long', 'longitude', 'longitud', 'x');
-
-            const result = [];
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                if (!row || row.every(c => !c)) continue;
-
-                let lat = null, lon = null;
-
-                // Intentar columna de coordenadas combinada (ej: "-12.045, -77.042")
-                if (iCoord >= 0 && row[iCoord]) {
-                    const parsed = splitCoord(String(row[iCoord]));
-                    if (parsed) { lat = parsed[0]; lon = parsed[1]; }
-                }
-
-                // Intentar columnas lat/lon separadas
-                if ((lat === null || lon === null) && iLat >= 0 && iLon >= 0) {
-                    const la = toNum(row[iLat]), lo = toNum(row[iLon]);
-                    if (la !== null && lo !== null) { lat = la; lon = lo; }
-                }
-
-                // Validar que sea Lima Metropolitana (bounding box)
-                if (lat === null || lon === null) continue;
-                if (Math.abs(lat) > 90 || Math.abs(lon) > 180) continue;
-                if (lat < -13.0 || lat > -11.0 || lon < -77.5 || lon > -76.5) {
-                    console.warn('Punto fuera de Lima ignorado:', lat, lon);
-                    continue;
-                }
-
-                result.push({
-                    id: i,
-                    name: iName >= 0 && row[iName] ? String(row[iName]).trim() : 'Punto ' + i,
-                    address: iAddr >= 0 && row[iAddr] ? String(row[iAddr]).trim() : '',
-                    lat, lon
-                });
-            }
-
-            if (result.length < 2) throw new Error(
-                'No se encontraron coordenadas válidas en Lima.\n' +
-                'El archivo necesita columnas: lat + lon, o una columna "coordenadas" con formato "-12.046, -77.042".'
-            );
-            return result;
+// ── ALGORITMO 2: Or-opt (reinserción) ─────────────────────────
+function algoOrOpt(D){
+  var tour=algoNN2opt(D).slice(),n=tour.length,imp=true,it=0,i,j,node,costR,costI,newTour,ins;
+  while(imp&&it<300){
+    imp=false;it++;
+    // Or-opt-1: reinsertar nodo individual
+    var found=false;
+    for(i=1;i<n-1&&!found;i++){
+      node=tour[i];
+      costR=D[tour[i-1]][node]+D[node][tour[i+1]]-D[tour[i-1]][tour[i+1]];
+      for(j=0;j<n-1&&!found;j++){
+        if(j>=i-1&&j<=i+1)continue;
+        costI=D[tour[j]][node]+D[node][tour[j+1]]-D[tour[j]][tour[j+1]];
+        if(costI-costR<-1e-9){
+          newTour=[];
+          for(var k=0;k<tour.length;k++) if(k!==i) newTour.push(tour[k]);
+          ins=j<i?j+1:j;
+          newTour.splice(ins,0,node);
+          tour=newTour;n=tour.length;imp=true;found=true;
         }
-
-        function splitCoord(s) {
-            s = s.trim();
-            const m = s.match(/(-?\d{1,3}\.?\d*)[,\s;|]+(-?\d{1,3}\.?\d*)/);
-            if (m) return [parseFloat(m[1]), parseFloat(m[2])];
-            return null;
+      }
+    }
+    // Or-opt-2: reinsertar pares
+    var found2=false;
+    for(i=1;i<n-2&&!found2;i++){
+      var n1=tour[i],n2=tour[i+1];
+      if(i+2>=n)continue;
+      costR=D[tour[i-1]][n1]+D[n2][tour[i+2]]-D[tour[i-1]][tour[i+2]];
+      for(j=0;j<n-2&&!found2;j++){
+        if(j>=i-1&&j<=i+2)continue;
+        if(j+1>=n)continue;
+        costI=D[tour[j]][n1]+D[n2][tour[j+1]]-D[tour[j]][tour[j+1]];
+        if(costI-costR<-1e-9){
+          newTour=[];
+          for(var k=0;k<tour.length;k++) if(k!==i&&k!==i+1) newTour.push(tour[k]);
+          ins=j<i?j+1:j-1;
+          if(ins<0)ins=0;if(ins>newTour.length)ins=newTour.length;
+          newTour.splice(ins,0,n1,n2);
+          tour=newTour;n=tour.length;imp=true;found2=true;
         }
+      }
+    }
+  }
+  return twoOpt(D,tour);
+}
 
-        function toNum(v) {
-            if (v === null || v === undefined || v === '') return null;
-            const n = parseFloat(String(v).replace(',', '.'));
-            return isNaN(n) ? null : n;
-        }
+// ── ALGORITMO 3: Clarke-Wright Savings ────────────────────────
+function algoClarkeWright(D){
+  var n=D.length,cLat=0,cLon=0,i,j;
+  for(i=0;i<n;i++){cLat+=points[i].lat;cLon+=points[i].lon;}
+  cLat/=n;cLon/=n;
+  var depot={lat:cLat,lon:cLon};
+  var dDep=points.map(function(p){return hav(p,depot);});
+  var savings=[];
+  for(i=0;i<n;i++) for(j=i+1;j<n;j++) savings.push({i:i,j:j,s:dDep[i]+dDep[j]-D[i][j]});
+  savings.sort(function(a,b){return b.s-a.s;});
+  var routes=[];for(i=0;i<n;i++) routes.push([i]);
+  var routeOf=[];for(i=0;i<n;i++) routeOf[i]=i;
+  function isEnd(r,node){return r[0]===node||r[r.length-1]===node;}
+  for(var s=0;s<savings.length;s++){
+    var si=savings[s].i,sj=savings[s].j;
+    var ri=routeOf[si],rj=routeOf[sj];
+    if(ri===rj)continue;
+    var R1=routes[ri],R2=routes[rj];
+    if(!isEnd(R1,si)||!isEnd(R2,sj))continue;
+    if(R1[0]===si)R1.reverse();
+    if(R2[R2.length-1]===sj)R2.reverse();
+    var merged=R1.concat(R2);
+    routes[ri]=merged;routes[rj]=[];
+    merged.forEach(function(node){routeOf[node]=ri;});
+  }
+  var best=routes.reduce(function(a,b){return b.length>a.length?b:a;},[]);
+  if(best.length<n){
+    var inT=new Set(best);
+    for(i=0;i<n;i++){
+      if(inT.has(i))continue;
+      var bp=1,bc=Infinity;
+      for(j=0;j<best.length-1;j++){
+        var c=D[best[j]][i]+D[i][best[j+1]]-D[best[j]][best[j+1]];
+        if(c<bc){bc=c;bp=j+1;}
+      }
+      best.splice(bp,0,i);inT.add(i);
+    }
+  }
+  return twoOpt(D,best);
+}
 
-        // ─── Demo datos Lima (Miraflores) ──────────────────────────────────
-        function loadDemo() {
-            loadPoints([
-                { id: 1, name: 'Bodega El Progreso', address: 'Av. Benavides 1230', lat: -12.1191, lon: -77.0282 },
-                { id: 2, name: 'Farmacia San Pablo', address: 'Av. Larco 345', lat: -12.1214, lon: -77.0300 },
-                { id: 3, name: 'Supermercado Wong', address: 'Av. Benavides 3866', lat: -12.1164, lon: -77.0041 },
-                { id: 4, name: 'Tienda Oechsle', address: 'Av. Angamos 2695', lat: -12.1022, lon: -77.0038 },
-                { id: 5, name: 'Minimarket La Esperanza', address: 'Jr. Schell 130', lat: -12.1244, lon: -77.0316 },
-                { id: 6, name: 'Bodega Don Carlos', address: 'Calle Berlín 240', lat: -12.1179, lon: -77.0348 },
-                { id: 7, name: 'Distribuidora Lima Sur', address: 'Av. Ricardo Palma 442', lat: -12.1155, lon: -77.0289 },
-                { id: 8, name: 'Ferretería Los Andes', address: 'Av. 28 de Julio 680', lat: -12.1195, lon: -77.0261 },
-                { id: 9, name: 'Panadería La Flor', address: 'Calle Alcanfores 572', lat: -12.1230, lon: -77.0274 },
-                { id: 10, name: 'Librería El Quijote', address: 'Av. Arequipa 4760', lat: -12.1088, lon: -77.0323 },
-            ]);
-            setStatus('Demo cargado: 10 puntos en Miraflores. Haz clic en "Optimizar ruta".', 'ok');
-        }
+// ── ALGORITMO 4: Greedy Edge + 3-opt (double-bridge) ─────────
+function algoGreedy3opt(D){
+  var n=D.length,edges=[],i,j;
+  for(i=0;i<n;i++) for(j=i+1;j<n;j++) edges.push([D[i][j],i,j]);
+  edges.sort(function(a,b){return a[0]-b[0];});
+  var degree=new Int32Array(n),adj=[];
+  for(i=0;i<n;i++)adj.push([]);
+  var parent=[];for(i=0;i<n;i++)parent[i]=i;
+  function find(x){return parent[x]===x?x:parent[x]=find(parent[x]);}
+  var ec=0;
+  for(var e=0;e<edges.length&&ec<n;e++){
+    var ei=edges[e][1],ej=edges[e][2];
+    if(degree[ei]>=2||degree[ej]>=2)continue;
+    if(ec<n-1&&find(ei)===find(ej))continue;
+    adj[ei].push(ej);adj[ej].push(ei);
+    degree[ei]++;degree[ej]++;
+    parent[find(ei)]=find(ej);
+    ec++;
+  }
+  var start=0;
+  for(i=0;i<n;i++)if(degree[i]===1){start=i;break;}
+  var tour=[start],vis=new Uint8Array(n);vis[start]=1;
+  while(tour.length<n){
+    var cur=tour[tour.length-1],next=-1;
+    for(var k=0;k<adj[cur].length;k++){if(!vis[adj[cur][k]]){next=adj[cur][k];break;}}
+    if(next===-1)break;
+    tour.push(next);vis[next]=1;
+  }
+  if(tour.length<n){
+    var inT=new Set(tour);
+    for(i=0;i<n;i++){
+      if(inT.has(i))continue;
+      var bp=1,bc=Infinity;
+      for(j=0;j<tour.length-1;j++){
+        var c=D[tour[j]][i]+D[i][tour[j+1]]-D[tour[j]][tour[j+1]];
+        if(c<bc){bc=c;bp=j+1;}
+      }
+      tour.splice(bp,0,i);inT.add(i);
+    }
+  }
+  var best=twoOpt(D,tour),bestLen=tourLen(D,best);
+  // Double-bridge perturbation
+  for(var att=0;att<20;att++){
+    var pts4=[],pool=[];
+    for(i=1;i<n-1;i++)pool.push(i);
+    for(i=pool.length-1;i>0;i--){var r=Math.floor(Math.random()*(i+1));var tmp=pool[i];pool[i]=pool[r];pool[r]=tmp;}
+    pts4=pool.slice(0,4).sort(function(a,b){return a-b;});
+    if(pts4.length<4)continue;
+    var a=pts4[0],b=pts4[1],c=pts4[2],d=pts4[3];
+    var cand=best.slice(0,a).concat(best.slice(c,d)).concat(best.slice(b,c)).concat(best.slice(a,b)).concat(best.slice(d));
+    var imp2=twoOpt(D,cand);
+    var len2=tourLen(D,imp2);
+    if(len2<bestLen){bestLen=len2;best=imp2;}
+  }
+  return best;
+}
 
-        // ─── Cargar puntos en mapa ─────────────────────────────────────────
-        function loadPoints(pts) {
-            clearAll(false);
-            points = pts;
-            optimizedOrder = pts.map((_, i) => i);
-            renderMarkers(optimizedOrder);
-            renderList(optimizedOrder, false);
-            document.getElementById('btn-optimize').disabled = false;
-            document.getElementById('btn-clear').disabled = false;
-            document.getElementById('point-count').textContent = pts.length + ' pts';
-            if (pts.length > 0) {
-                const bounds = [[Math.min(...pts.map(p => p.lat)), Math.min(...pts.map(p => p.lon))],
-                [Math.max(...pts.map(p => p.lat)), Math.max(...pts.map(p => p.lon))]];
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
-        }
+// ── OSRM ──────────────────────────────────────────────────────
+function fetchOSRM(order){
+  var coords=order.map(function(i){return points[i].lon+','+points[i].lat;}).join(';');
+  var url='https://router.project-osrm.org/trip/v1/driving/'+coords+'?roundtrip=false&source=first&destination=last&overview=full&geometries=geojson';
+  return fetch(url,{signal:AbortSignal.timeout(15000)}).then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(data){
+    if(!data.trips||!data.trips[0])throw new Error('Sin resultado');
+    return data.trips[0];
+  });
+}
+function drawOSRM(geom,color){
+  clearLines();
+  var ll=geom.coordinates.map(function(c){return[c[1],c[0]];});
+  routePolylines.push(L.polyline(ll,{color:color,weight:4.5,opacity:.9,lineJoin:'round'}).addTo(map));
+}
+function drawDirect(order,color){
+  clearLines();
+  var ll=order.map(function(i){return[points[i].lat,points[i].lon];});
+  routePolylines.push(L.polyline(ll,{color:color,weight:3,opacity:.6,dashArray:'8 5'}).addTo(map));
+}
 
-        // ─── Marcadores ───────────────────────────────────────────────────
-        function makeIcon(num, color) {
-            return L.divIcon({
-                html: `<div style="width:30px;height:30px;border-radius:50%;background:${color};border:2.5px solid rgba(255,255,255,0.85);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.5)">${num}</div>`,
-                className: '', iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -18]
-            });
-        }
+// ── CALCULAR TODO ─────────────────────────────────────────────
+function runAll(){
+  if(points.length<2){setStatus('Necesitas al menos 2 puntos.','warn');return;}
+  document.getElementById('btn-run').disabled=true;
+  setStatus('Construyendo matriz de distancias...','run');setProgress(3);
+  sleep(10).then(function(){
+    var D=buildD(points);
+    var fns=[algoNN2opt,algoOrOpt,algoClarkeWright,algoGreedy3opt];
+    results=[];
+    function runOne(idx){
+      if(idx>=4){
+        var bestIdx=results.reduce(function(bi,r,i){return r.dist<results[bi].dist?i:bi;},0);
+        results.forEach(function(r,i){r.isBest=i===bestIdx;});
+        setProgress(80);
+        updateCompare(bestIdx);
+        selectAlgo(bestIdx);
+        document.getElementById('btn-run').disabled=false;
+        document.getElementById('btn-export').disabled=false;
+        setProgress(100);setTimeout(function(){setProgress(0);},800);
+        return;
+      }
+      setStatus('Calculando '+(idx+1)+'/4: '+NAMES[idx]+'...','run');
+      setProgress(8+idx*18);
+      sleep(20).then(function(){
+        var tour=fns[idx](D);
+        results.push({tour:tour,dist:tourLen(D,tour),label:NAMES[idx]});
+        runOne(idx+1);
+      });
+    }
+    runOne(0);
+  });
+}
 
-        function renderMarkers(order) {
-            markersLayer.forEach(m => map.removeLayer(m));
-            markersLayer = [];
-            order.forEach((idx, i) => {
-                const p = points[idx];
-                const color = i === 0 ? '#22aa55' : i === order.length - 1 ? '#dd3333' : '#2277ff';
-                const m = L.marker([p.lat, p.lon], { icon: makeIcon(i + 1, color) }).addTo(map);
-                m.bindPopup(
-                    `<strong>${i + 1}. ${p.name}</strong>` +
-                    (p.address ? `<br><span style="color:#8aaccc">${p.address}</span>` : '') +
-                    `<br><span style="color:#4a7aaa;font-size:10px">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</span>`
-                );
-                markersLayer.push(m);
-            });
-        }
+// ── SELECCIONAR ALGORITMO ─────────────────────────────────────
+function selectAlgo(idx){
+  if(!results[idx])return;
+  activeAlgo=idx;
+  for(var i=0;i<4;i++){
+    var b=document.getElementById('ab-'+i);
+    b.className='algo-btn'+(i===idx?' selected':'')+(results[i]&&results[i].isBest?' best':'');
+  }
+  var r=results[idx],color=COLORS[idx];
+  renderMarkers(r.tour,idx);
+  renderList(r.tour);
+  document.getElementById('stats').style.display='grid';
+  document.getElementById('sv-d').textContent=r.dist.toFixed(1)+' km*';
+  document.getElementById('sv-s').textContent=r.tour.length;
+  document.getElementById('sv-t').textContent='—';
+  document.getElementById('sv-a').textContent=NAMES[idx]+(r.isBest?' ✓ mejor':'');
+  setStatus('Trazando ruta "'+NAMES[idx]+'" por calles reales (OSRM)...','run');
+  fetchOSRM(r.tour).then(function(trip){
+    drawOSRM(trip.geometry,color);
+    var km=(trip.distance/1000).toFixed(1),min=Math.round(trip.duration/60);
+    document.getElementById('sv-d').textContent=km+' km';
+    document.getElementById('sv-t').textContent=min+' min';
+    setStatus('"'+NAMES[idx]+'": '+km+' km reales · ~'+min+' min · '+r.tour.length+' paradas'+(r.isBest?' ← mejor ruta':''),'ok');
+  }).catch(function(){
+    drawDirect(r.tour,color);
+    document.getElementById('sv-t').textContent=Math.round(r.dist*3)+' min*';
+    setStatus('OSRM no disponible. "'+NAMES[idx]+'": ~'+r.dist.toFixed(1)+' km directos','warn');
+  });
+  document.querySelectorAll('.cp-row').forEach(function(el,i){el.classList.toggle('cp-active',i===idx);});
+}
 
-        // ─── ALGORITMO TSP: Nearest Neighbor + 2-opt ──────────────────────
+// ── PANEL COMPARATIVO ─────────────────────────────────────────
+function updateCompare(bestIdx){
+  document.getElementById('compare-panel').style.display='block';
+  var rows=document.getElementById('cp-rows');
+  rows.innerHTML='';
+  results.forEach(function(r,i){
+    var div=document.createElement('div');
+    div.className='cp-row'+(r.isBest?' cp-best':'')+(i===activeAlgo?' cp-active':'');
+    var diff=r.isBest?'':'+'+((r.dist-results[bestIdx].dist)/results[bestIdx].dist*100).toFixed(1)+'%';
+    div.innerHTML='<div class="cp-algo-dot" style="background:'+COLORS[i]+'"></div>'
+      +'<span class="cp-name">'+NAMES[i]+'</span>'
+      +'<span class="cp-dist">'+r.dist.toFixed(1)+' km</span>'
+      +(r.isBest?'<span class="cp-badge">mejor</span>':'<span style="font-size:10px;color:#4a5a70">'+diff+'</span>');
+    div.onclick=(function(ii){return function(){selectAlgo(ii);};})(i);
+    rows.appendChild(div);
+  });
+}
 
-        // Distancia Haversine (km) entre dos puntos
-        function haversine(a, b) {
-            const R = 6371;
-            const dLat = (b.lat - a.lat) * Math.PI / 180;
-            const dLon = (b.lon - a.lon) * Math.PI / 180;
-            const x = Math.sin(dLat / 2) ** 2
-                + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-            return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
-        }
+// ── LISTA LATERAL ─────────────────────────────────────────────
+function renderList(order){
+  var list=document.getElementById('route-list');
+  if(!points.length){list.innerHTML='<div class="empty">Ningún punto cargado</div>';return;}
+  list.innerHTML='';
+  order.forEach(function(idx,i){
+    var p=points[idx];
+    var color=i===0?'#22aa55':i===order.length-1?'#dd3333':COLORS[activeAlgo];
+    var div=document.createElement('div');
+    div.className='ri';
+    div.innerHTML='<div class="rn" style="background:'+color+'">'+(i+1)+'</div><div><div class="rname">'+p.name+'</div>'+(p.address?'<div class="raddr">'+p.address+'</div>':'')+'</div>';
+    div.onclick=(function(pidx,ii,d){return function(){
+      map.setView([points[pidx].lat,points[pidx].lon],16);
+      if(markersLayer[ii])markersLayer[ii].openPopup();
+      document.querySelectorAll('.ri').forEach(function(el){el.classList.remove('active');});
+      d.classList.add('active');
+    };})(idx,i,div);
+    list.appendChild(div);
+  });
+}
 
-        // Pre-calcular matriz de distancias
-        function buildDistMatrix(pts) {
-            const n = pts.length;
-            const D = Array.from({ length: n }, () => new Float64Array(n));
-            for (let i = 0; i < n; i++)
-                for (let j = i + 1; j < n; j++)
-                    D[i][j] = D[j][i] = haversine(pts[i], pts[j]);
-            return D;
-        }
+// ── EXPORTAR ─────────────────────────────────────────────────
+function exportRoute(){
+  if(!results[activeAlgo]||!points.length)return;
+  var order=results[activeAlgo].tour;
+  var rows=[['Orden','Algoritmo','Nombre','Dirección','Latitud','Longitud']];
+  order.forEach(function(idx,i){
+    var p=points[idx];
+    rows.push([i+1,NAMES[activeAlgo],p.name,p.address,p.lat,p.lon]);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:6},{wch:20},{wch:30},{wch:35},{wch:12},{wch:12}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Ruta');
+  if(results.every(function(r){return r;})){
+    var cmp=[['Algoritmo','Distancia directa (km)','Mejor']];
+    results.forEach(function(r,i){cmp.push([NAMES[i],r.dist.toFixed(2),r.isBest?'SÍ':'']);});
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cmp),'Comparativa');
+  }
+  XLSX.writeFile(wb,'ruta_lima_'+NAMES[activeAlgo].replace(/\s+/g,'_')+'.xlsx');
+  setStatus('Exportado con hoja comparativa de los 4 algoritmos.','ok');
+}
 
-        // Nearest Neighbor: O(n²) — ruta inicial
-        function nearestNeighbor(D) {
-            const n = D.length;
-            const visited = new Uint8Array(n);
-            const tour = [0]; visited[0] = 1;
-            for (let s = 1; s < n; s++) {
-                let cur = tour[tour.length - 1], best = -1, bestD = Infinity;
-                for (let j = 0; j < n; j++) {
-                    if (!visited[j] && D[cur][j] < bestD) { bestD = D[cur][j]; best = j; }
-                }
-                tour.push(best); visited[best] = 1;
-            }
-            return tour;
-        }
-
-        // Longitud total del tour
-        function tourLength(D, tour) {
-            let d = 0;
-            for (let i = 0; i < tour.length - 1; i++) d += D[tour[i]][tour[i + 1]];
-            return d;
-        }
-
-        // 2-opt: mejora iterativa hasta convergencia
-        function twoOpt(D, tour) {
-            const n = tour.length;
-            let best = tour.slice(), improved = true, iterations = 0;
-            while (improved && iterations < 500) {
-                improved = false; iterations++;
-                for (let i = 0; i < n - 1; i++) {
-                    for (let j = i + 2; j < n; j++) {
-                        if (i === 0 && j === n - 1) continue;
-                        // Ganancia al invertir el segmento [i+1 .. j]
-                        const gain = D[best[i]][best[i + 1]] + D[best[j]][best[(j + 1) % n]]
-                            - D[best[i]][best[j]] - D[best[i + 1]][best[(j + 1) % n]];
-                        if (gain > 1e-8) {
-                            // Invertir segmento
-                            let lo = i + 1, hi = j;
-                            while (lo < hi) { [best[lo], best[hi]] = [best[hi], best[lo]]; lo++; hi--; }
-                            improved = true;
-                        }
-                    }
-                }
-            }
-            return best;
-        }
-
-        // ─── OSRM: rutas reales por calles ───────────────────────────────
-        async function fetchOSRM(order) {
-            const coords = order.map(i => points[i].lon + ',' + points[i].lat).join(';');
-            const url = `https://router.project-osrm.org/trip/v1/driving/${coords}` +
-                `?roundtrip=false&source=first&destination=last&overview=full&geometries=geojson`;
-            const resp = await fetch(url, { signal: AbortSignal.timeout(14000) });
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const data = await resp.json();
-            if (!data.trips || !data.trips[0]) throw new Error('Sin resultado');
-            return data.trips[0];
-        }
-
-        // Dibujar ruta OSRM (geometría real de calles)
-        function drawOSRMRoute(geom) {
-            clearRouteLines();
-            const latlngs = geom.coordinates.map(c => [c[1], c[0]]);
-            routePolylines.push(
-                L.polyline(latlngs, { color: '#ff6b35', weight: 4.5, opacity: 0.9, lineJoin: 'round' }).addTo(map)
-            );
-        }
-
-        // Fallback: línea recta punteada si OSRM no responde
-        function drawStraightRoute(order) {
-            clearRouteLines();
-            const latlngs = order.map(i => [points[i].lat, points[i].lon]);
-            routePolylines.push(
-                L.polyline(latlngs, { color: '#ff6b35', weight: 3, opacity: 0.65, dashArray: '8 6' }).addTo(map)
-            );
-        }
-
-        function clearRouteLines() { routePolylines.forEach(l => map.removeLayer(l)); routePolylines = []; }
-
-        // ─── ORQUESTAR OPTIMIZACIÓN ────────────────────────────────────────
-        async function runOptimize() {
-            if (points.length < 2) { setStatus('Necesitas al menos 2 puntos.', 'warn'); return; }
-            document.getElementById('btn-optimize').disabled = true;
-            clearRouteLines();
-
-            setStatus('Construyendo matriz de distancias...', 'loading'); setProgress(5);
-            await sleep(10);
-            const D = buildDistMatrix(points);
-
-            setStatus('Nearest Neighbor: calculando ruta inicial...', 'loading'); setProgress(20);
-            await sleep(10);
-            const nnTour = nearestNeighbor(D);
-
-            setStatus('2-opt: mejorando ruta...', 'loading'); setProgress(40);
-            await sleep(10);
-            const optTour = twoOpt(D, nnTour);
-
-            optimizedOrder = optTour;
-            const distKm = tourLength(D, optTour).toFixed(1);
-
-            setStatus('Trazando ruta en calles reales (OSRM)...', 'loading'); setProgress(65);
-            renderMarkers(optTour);
-
-            let timeMin;
-            try {
-                const trip = await fetchOSRM(optTour);
-                setProgress(88);
-                drawOSRMRoute(trip.geometry);
-                const realKm = (trip.distance / 1000).toFixed(1);
-                timeMin = Math.round(trip.duration / 60);
-                showStats(realKm, optTour.length, timeMin, 'NN + 2-opt + OSRM');
-                setStatus(`Ruta optimizada: ${realKm} km reales · ~${timeMin} min en auto · ${optTour.length} paradas`, 'ok');
-            } catch (err) {
-                setProgress(88);
-                drawStraightRoute(optTour);
-                timeMin = Math.round(parseFloat(distKm) * 3);
-                showStats(distKm, optTour.length, timeMin, 'NN + 2-opt (línea directa)');
-                setStatus(`OSRM no disponible. Ruta directa: ~${distKm} km · ${optTour.length} paradas`, 'warn');
-            }
-
-            renderList(optTour, true);
-            document.getElementById('btn-export').disabled = false;
-            document.getElementById('btn-optimize').disabled = false;
-            setProgress(100); setTimeout(() => setProgress(0), 900);
-        }
-
-        // ─── Stats panel ──────────────────────────────────────────────────
-        function showStats(dist, stops, time, algo) {
-            document.getElementById('stats-panel').style.display = 'grid';
-            document.getElementById('sv-dist').textContent = dist + ' km';
-            document.getElementById('sv-stops').textContent = stops;
-            document.getElementById('sv-time').textContent = time + ' min';
-            document.getElementById('sv-algo').textContent = algo;
-        }
-
-        // ─── Lista lateral ────────────────────────────────────────────────
-        function renderList(order, optimized) {
-            const list = document.getElementById('route-list');
-            if (!points.length) { list.innerHTML = '<div class="empty">Ningún punto cargado</div>'; return; }
-            list.innerHTML = '';
-            order.forEach((idx, i) => {
-                const p = points[idx];
-                const color = i === 0 ? '#22aa55' : i === order.length - 1 ? '#dd3333' : '#2277ff';
-                const div = document.createElement('div');
-                div.className = 'route-item';
-                div.innerHTML =
-                    `<div class="rnum" style="background:${color}">${i + 1}</div>` +
-                    `<div><div class="rname">${p.name}</div>${p.address ? `<div class="raddr">${p.address}</div>` : ''}</div>`;
-                div.onclick = () => {
-                    map.setView([p.lat, p.lon], 16);
-                    if (markersLayer[i]) markersLayer[i].openPopup();
-                    document.querySelectorAll('.route-item').forEach(el => el.classList.remove('active'));
-                    div.classList.add('active');
-                };
-                list.appendChild(div);
-            });
-        }
-
-        // ─── Exportar a Excel ─────────────────────────────────────────────
-        function exportRoute() {
-            if (!optimizedOrder.length || !points.length) return;
-            const rows = [['Orden', 'Nombre', 'Dirección', 'Latitud', 'Longitud']];
-            optimizedOrder.forEach((idx, i) => {
-                const p = points[idx];
-                rows.push([i + 1, p.name, p.address, p.lat, p.lon]);
-            });
-            const ws = XLSX.utils.aoa_to_sheet(rows);
-            ws['!cols'] = [{ wch: 6 }, { wch: 30 }, { wch: 35 }, { wch: 12 }, { wch: 12 }];
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Ruta Optimizada');
-            XLSX.writeFile(wb, 'ruta_optimizada_lima.xlsx');
-            setStatus('Archivo exportado: ruta_optimizada_lima.xlsx', 'ok');
-        }
-
-        // ─── Limpiar todo ─────────────────────────────────────────────────
-        function clearAll(resetStatus = true) {
-            points = []; optimizedOrder = [];
-            markersLayer.forEach(m => map.removeLayer(m)); markersLayer = [];
-            clearRouteLines();
-            document.getElementById('route-list').innerHTML = '<div class="empty">Ningún punto cargado</div>';
-            document.getElementById('stats-panel').style.display = 'none';
-            document.getElementById('btn-optimize').disabled = true;
-            document.getElementById('btn-clear').disabled = true;
-            document.getElementById('btn-export').disabled = true;
-            document.getElementById('point-count').textContent = '0 pts';
-            if (resetStatus) setStatus('Listo. Carga un Excel o usa el Demo.', 'idle');
-        }
-    </script>
+// ── LIMPIAR ───────────────────────────────────────────────────
+function clearAll(rs){
+  points=[];results=[null,null,null,null];activeAlgo=0;
+  markersLayer.forEach(function(m){map.removeLayer(m);});markersLayer=[];
+  clearLines();
+  document.getElementById('route-list').innerHTML='<div class="empty">Ningún punto cargado</div>';
+  document.getElementById('stats').style.display='none';
+  document.getElementById('compare-panel').style.display='none';
+  document.getElementById('btn-run').disabled=true;
+  document.getElementById('btn-clear').disabled=true;
+  document.getElementById('btn-export').disabled=true;
+  document.getElementById('pcnt').textContent='0 pts';
+  for(var i=0;i<4;i++) document.getElementById('ab-'+i).className='algo-btn'+(i===0?' selected':'');
+  if(rs!==false) setStatus('Listo.','idle');
+}
+</script>
 </body>
-
 </html>
