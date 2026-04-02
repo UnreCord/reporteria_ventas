@@ -2,115 +2,230 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Optimizador de Rutas · Lima</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rutas Comerciales · Lima</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121e;color:#dde4f0;display:flex;flex-direction:column;overflow:hidden;font-size:13px;position:relative}
-#header{padding:8px 16px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:12px;flex-shrink:0}
-#header h1{font-size:14px;font-weight:600;color:#fff}
-.sub{font-size:10px;color:#5a6a8a;margin-top:1px}
-.tag{background:#162040;color:#4a90d9;font-size:10px;padding:2px 7px;border-radius:8px;margin-left:5px;font-weight:600;vertical-align:middle}
-#toolbar{padding:7px 14px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:7px;flex-shrink:0;flex-wrap:wrap}
-.btn{font-size:11px;padding:5px 11px;border:1px solid #263050;border-radius:5px;background:#131826;color:#b0c4de;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+/* ══════════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121e;color:#dde4f0;display:flex;flex-direction:column;font-size:13px;position:relative}
+
+/* ══════════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════════ */
+#header{padding:8px 14px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:10}
+#header-logo{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+#header h1{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{background:#162040;color:#4a90d9;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;white-space:nowrap}
+/* Botón hamburguesa (solo móvil) */
+#menu-toggle{display:none;background:none;border:1px solid #263050;border-radius:5px;color:#8aacd0;padding:5px 8px;cursor:pointer;font-size:16px;flex-shrink:0}
+
+/* ══════════════════════════════════════════════════
+   TOOLBAR
+══════════════════════════════════════════════════ */
+#toolbar{padding:6px 12px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;transition:max-height .25s,padding .25s}
+#toolbar.collapsed{max-height:0;padding:0;overflow:hidden}
+.btn{font-size:11px;padding:5px 10px;border:1px solid #263050;border-radius:5px;background:#131826;color:#b0c4de;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;user-select:none}
 .btn:hover{background:#1a2540;border-color:#3a5a88}
+.btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .btn.go{background:#1a4a9a;color:#fff;border-color:#2a65cc;font-weight:600}
 .btn.go:hover:not(:disabled){background:#1e55b5}
 .btn.exp{background:#1a4a2a;color:#6dffaa;border-color:#2a7a44}
 .btn.exp:hover:not(:disabled){background:#1e5a32}
-#upload-zone{border:1px dashed #263a60;border-radius:5px;padding:5px 11px;font-size:11px;color:#5a80aa;cursor:pointer;background:#0d1220;transition:all .15s}
-#upload-zone:hover{border-color:#4a72a0;color:#8aacd0}
+/* Drop zone upload */
+#upload-zone{border:1px dashed #263a60;border-radius:5px;padding:5px 10px;font-size:11px;color:#5a80aa;cursor:pointer;background:#0d1220;transition:all .15s;white-space:nowrap}
+#upload-zone:hover,#upload-zone.dragover{border-color:#4a90d9;color:#6aaeff;background:#0d1830}
 #file-input{display:none}
-.sep{width:1px;height:20px;background:#1e2540;flex-shrink:0}
-#algo-bar{padding:5px 14px;background:#0d1020;border-bottom:1px solid #1a2035;display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
-.algo-btn{font-size:11px;padding:3px 10px;border:1px solid #263050;border-radius:12px;background:#131826;color:#7a94b8;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.sep{width:1px;height:18px;background:#1e2540;flex-shrink:0}
+
+/* ══════════════════════════════════════════════════
+   ALGO BAR
+══════════════════════════════════════════════════ */
+#algo-bar{padding:5px 12px;background:#0d1020;border-bottom:1px solid #1a2035;display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
+.algo-btn{font-size:11px;padding:3px 9px;border:1px solid #263050;border-radius:12px;background:#131826;color:#7a94b8;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;user-select:none}
 .algo-btn:hover{background:#1a2540;color:#aac4e0}
 .algo-btn.selected{background:#1a3a7a;color:#6aaeff;border-color:#2a5acc;font-weight:600}
 .algo-btn.best{border-color:#2a7a44!important;color:#5aff8a!important}
-.algo-label{font-size:10px;color:#3a5070;margin-right:3px;white-space:nowrap}
+.algo-btn.running::after{content:' ⏳';font-size:9px}
+.algo-btn.done-best::after{content:' ✓';font-size:9px;color:#5aff8a}
+.algo-label{font-size:10px;color:#3a5070;margin-right:2px;white-space:nowrap}
+
+/* ══════════════════════════════════════════════════
+   PROGRESS / STATUS
+══════════════════════════════════════════════════ */
 #progress{height:2px;background:#0d1020;flex-shrink:0}
 #progress-bar{height:100%;background:linear-gradient(90deg,#2a7aff,#ff6b35);width:0%;transition:width .3s}
-#status-bar{padding:4px 16px;background:#090910;border-bottom:1px solid #141820;font-size:11px;color:#4a6a88;display:flex;align-items:center;gap:7px;flex-shrink:0;min-height:24px}
+#status-bar{padding:4px 14px;background:#090910;border-bottom:1px solid #141820;font-size:11px;color:#4a6a88;display:flex;align-items:center;gap:7px;flex-shrink:0;min-height:24px}
 .dot{width:6px;height:6px;border-radius:50%;background:#2a3a50;flex-shrink:0}
 .dot.ok{background:#22aa55}.dot.run{background:#ffaa22;animation:blink .7s infinite}.dot.warn{background:#ff6022}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
-#main{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* ══════════════════════════════════════════════════
+   MAIN LAYOUT (desktop)
+══════════════════════════════════════════════════ */
+#main{display:flex;flex:1;overflow:hidden;min-height:0;position:relative}
 #map{flex:1;z-index:1}
-#sidebar{width:290px;background:#0a0a16;border-left:1px solid #141820;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+
+/* ══════════════════════════════════════════════════
+   SIDEBAR (desktop)
+══════════════════════════════════════════════════ */
+#sidebar{width:285px;background:#0a0a16;border-left:1px solid #141820;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .2s,transform .2s;position:relative;z-index:5}
+#sidebar.collapsed{width:0;border-left:none}
+/* Toggle sidebar button (desktop) */
+#sidebar-toggle{position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:14px;height:48px;background:#1a2540;border:1px solid #1e3050;border-right:none;border-radius:5px 0 0 5px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#5a80aa;font-size:10px;z-index:6;transition:background .15s}
+#sidebar-toggle:hover{background:#1e3060;color:#aac4e0}
+#sidebar-inner{display:flex;flex-direction:column;overflow:hidden;flex:1;min-width:285px}
+
+/* ══════════════════════════════════════════════════
+   SIDEBAR HEADER
+══════════════════════════════════════════════════ */
+#sb-header{padding:8px 12px;border-bottom:1px solid #141820;display:flex;align-items:center;gap:6px;flex-shrink:0}
+#sb-header .title{font-size:12px;font-weight:600;color:#aabfd8;flex:1}
+.cnt{background:#162040;color:#4a90d9;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600}
+/* Filtro de búsqueda */
+#search-box{padding:5px 11px;border-bottom:1px solid #141820;flex-shrink:0;display:none}
+#search-input{width:100%;font-size:11px;padding:5px 8px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit}
+#search-input:focus{outline:none;border-color:#2a5acc}
+#search-input::placeholder{color:#3a5a70}
+
+/* ══════════════════════════════════════════════════
+   CONFIG PANEL
+══════════════════════════════════════════════════ */
 #config-panel{padding:8px 11px;border-bottom:1px solid #141820;flex-shrink:0}
-.cfg-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.cfg-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+.cfg-title .arrow{font-size:8px;transition:transform .2s;margin-left:auto}
+.cfg-title.collapsed .arrow{transform:rotate(-90deg)}
+.cfg-body{overflow:hidden;transition:max-height .2s}
+.cfg-body.collapsed{max-height:0!important}
 .cfg-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
-.cfg-label{font-size:11px;color:#6a8aaa;width:90px;flex-shrink:0}
-select{font-size:11px;padding:3px 7px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;flex:1;cursor:pointer}
+.cfg-label{font-size:11px;color:#6a8aaa;width:88px;flex-shrink:0}
+select{font-size:11px;padding:3px 6px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;flex:1;cursor:pointer}
 select:focus{outline:none;border-color:#2a5acc}
+.time-input{font-size:11px;padding:3px 6px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;flex:1}
 .start-info{font-size:10px;color:#4a6a44;background:#0d1e10;border:1px solid #1a3a1a;border-radius:4px;padding:4px 8px;margin-top:2px;line-height:1.5}
 .start-info.active{color:#6aff8a;border-color:#2a6a2a}
-.tip{font-size:10px;color:#3a5a70;font-style:italic;margin-top:1px}
-#priority-legend{padding:7px 11px;border-bottom:1px solid #141820;flex-shrink:0}
-.pleg-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
-.pleg-row{display:flex;align-items:center;gap:7px;margin-bottom:3px;font-size:11px;color:#8aacc0}
-.pleg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.3)}
+.tip{font-size:10px;color:#3a5a70;font-style:italic;margin-top:2px}
+
+/* ══════════════════════════════════════════════════
+   SEGMENT LEGEND
+══════════════════════════════════════════════════ */
+#priority-legend{padding:6px 11px;border-bottom:1px solid #141820;flex-shrink:0}
+.pleg-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+.pleg-title .arrow{font-size:8px;transition:transform .2s;margin-left:auto}
+.pleg-body{overflow:hidden;transition:max-height .2s}
+.pleg-body.collapsed{max-height:0!important}
+.pleg-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;font-size:11px;color:#8aacc0}
+.pleg-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.3)}
 .pleg-weight{margin-left:auto;font-size:10px;color:#4a6a80}
-#stats{padding:8px 11px;border-bottom:1px solid #141820;display:none;grid-template-columns:1fr 1fr 1fr;gap:5px}
+/* Contadores por segmento */
+#seg-counts{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap}
+.seg-count{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.seg-count:hover{opacity:.75}
+.seg-count.dimmed{opacity:.35}
+
+/* ══════════════════════════════════════════════════
+   STATS
+══════════════════════════════════════════════════ */
+#stats{padding:7px 11px;border-bottom:1px solid #141820;display:none;grid-template-columns:1fr 1fr 1fr;gap:5px}
 .sc{background:#0d1626;border:1px solid #1a2a40;border-radius:5px;padding:5px 8px}
 .sc-l{font-size:9px;color:#3a5a78;margin-bottom:2px}
-.sc-v{font-size:14px;font-weight:700;color:#b0d0ff}
+.sc-v{font-size:13px;font-weight:700;color:#b0d0ff}
 .sc-v.sm{font-size:10px;padding-top:2px;line-height:1.5;color:#7aaad8}
-#compare-panel{padding:7px 11px;border-bottom:1px solid #141820;display:none;flex-shrink:0}
-.cp-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.cp-row{display:flex;align-items:center;gap:6px;padding:3px 5px;border-bottom:1px solid #0e1622;cursor:pointer;transition:background .1s;border-radius:3px}
+.sc-v.big{font-size:17px;color:#6aff8a}
+.sc-full{grid-column:1/-1}
+
+/* ══════════════════════════════════════════════════
+   COMPARE PANEL
+══════════════════════════════════════════════════ */
+#compare-panel{padding:6px 11px;border-bottom:1px solid #141820;display:none;flex-shrink:0}
+.cp-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.cp-row{display:flex;align-items:center;gap:5px;padding:3px 4px;border-bottom:1px solid #0e1622;cursor:pointer;transition:background .1s;border-radius:3px}
 .cp-row:hover{background:#0d1830}
 .cp-row.cp-active{background:#0d1e40}
-.cp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.cp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .cp-name{font-size:11px;font-weight:600;color:#8aacd0;flex:1}
-.cp-dist{font-size:11px;color:#5a8ab0;min-width:52px;text-align:right}
+.cp-dist{font-size:11px;color:#5a8ab0;min-width:50px;text-align:right}
 .cp-badge{font-size:9px;padding:1px 5px;border-radius:6px;background:#1a3a1a;color:#5aff8a;font-weight:600}
-#route-list{flex:1;overflow-y:auto;padding:4px 0}
+
+/* ══════════════════════════════════════════════════
+   ROUTE LIST
+══════════════════════════════════════════════════ */
+#route-list{flex:1;overflow-y:auto;padding:3px 0}
 #route-list::-webkit-scrollbar{width:3px}
 #route-list::-webkit-scrollbar-track{background:#0a0a16}
 #route-list::-webkit-scrollbar-thumb{background:#1e2a40;border-radius:2px}
-.ri{padding:6px 11px;border-bottom:1px solid #0e121e;cursor:pointer;display:flex;align-items:flex-start;gap:7px;transition:background .1s}
+.ri{padding:6px 10px;border-bottom:1px solid #0e121e;cursor:pointer;display:flex;align-items:flex-start;gap:6px;transition:background .1s}
 .ri:hover{background:#0e1626}
 .ri.active{background:#0d1e3a}
 .ri.start-point{background:#0a1e0a;border-left:2px solid #22aa55}
-.rn{width:22px;height:22px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ri.filtered-out{display:none}
+.rn{width:21px;height:21px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .ri-body{flex:1;min-width:0}
 .rname{font-size:11px;font-weight:600;color:#b8d0e8;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .raddr{font-size:10px;color:#4a6a88;margin-top:1px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ri-meta{display:flex;align-items:center;gap:4px;margin-top:2px}
 .seg-badge{font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
 .time-badge{font-size:9px;color:#4a6a78;margin-left:auto}
-.ri-actions{display:flex;gap:3px;margin-left:4px;flex-shrink:0;align-items:flex-start;padding-top:1px}
-.ri-btn{font-size:9px;padding:2px 5px;border:1px solid #1a3a1a;border-radius:3px;background:#0d1e0d;color:#4a8a4a;cursor:pointer;transition:all .1s}
+.ri-actions{display:flex;gap:3px;margin-left:3px;flex-shrink:0;align-items:flex-start;padding-top:1px}
+.ri-btn{font-size:9px;padding:2px 4px;border:1px solid #1a3a1a;border-radius:3px;background:#0d1e0d;color:#4a8a4a;cursor:pointer;transition:all .1s;user-select:none}
 .ri-btn:hover{background:#0d2a0d;color:#6aaa6a}
 .empty{padding:28px 14px;text-align:center;color:#2a3a50;font-size:12px}
-#algo-desc{padding:7px 13px;border-top:1px solid #141820;font-size:10px;color:#3a5a78;line-height:1.6;flex-shrink:0}
+
+/* ══════════════════════════════════════════════════
+   FOOTER INFO
+══════════════════════════════════════════════════ */
+#algo-desc{padding:6px 12px;border-top:1px solid #141820;font-size:10px;color:#3a5a78;line-height:1.6;flex-shrink:0}
 #algo-desc strong{color:#5a80aa}
 
-/* ── MODAL: fixed sobre todo, fuera del flujo de #main ── */
-#seg-modal{
-  position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,.72);
-  z-index:99999;
-  display:none;
-  align-items:center;justify-content:center;
-}
+/* ══════════════════════════════════════════════════
+   MAP CONTROLS (QoL buttons sobre el mapa)
+══════════════════════════════════════════════════ */
+#map-controls{position:absolute;top:10px;right:10px;z-index:400;display:flex;flex-direction:column;gap:5px}
+.map-btn{width:30px;height:30px;background:#0d1626;border:1px solid #1e3050;border-radius:5px;color:#8aacd0;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
+.map-btn:hover{background:#1a2a40;color:#aac4e0}
+.map-btn.active{background:#1a3a7a;color:#6aaeff;border-color:#2a5acc}
+
+/* ══════════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+══════════════════════════════════════════════════ */
+#toast-container{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99998;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+.toast{background:#0d1e36;border:1px solid #1e3a60;color:#aac8e8;font-size:12px;padding:8px 16px;border-radius:8px;pointer-events:none;opacity:0;transform:translateY(10px);transition:all .25s;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-color:#2a6a3a;color:#6dffaa}
+.toast.warn{border-color:#6a3a1a;color:#ffaa55}
+.toast.err{border-color:#6a1a1a;color:#ff7a7a}
+
+/* ══════════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════════ */
+#seg-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px}
 #seg-modal.open{display:flex}
-.modal-box{background:#0d1626;border:1px solid #1e3a60;border-radius:10px;padding:20px;width:340px;max-height:80vh;overflow-y:auto}
+.modal-box{background:#0d1626;border:1px solid #1e3a60;border-radius:10px;padding:18px;width:100%;max-width:380px;max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;gap:0}
 .modal-box::-webkit-scrollbar{width:3px}
 .modal-box::-webkit-scrollbar-thumb{background:#1e2a40}
-.modal-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px}
-.modal-sub{font-size:11px;color:#5a7a98;margin-bottom:14px}
-.modal-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid #141e2e;border-radius:5px;transition:background .1s}
+.modal-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px}
+.modal-sub{font-size:11px;color:#5a7a98;margin-bottom:10px}
+/* Search dentro del modal */
+#modal-search{width:100%;font-size:11px;padding:5px 8px;background:#0a0e18;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;margin-bottom:8px}
+#modal-search:focus{outline:none;border-color:#2a5acc}
+.modal-bulk{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.modal-bulk .btn{flex:1;text-align:center;padding:4px 6px}
+.modal-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-bottom:1px solid #141e2e;border-radius:4px;transition:background .1s}
 .modal-item:hover{background:#111e36}
-.modal-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0}
+.modal-item.hidden{display:none}
+.modal-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 .modal-name{flex:1;font-size:12px;color:#b0c8e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .modal-addr{font-size:10px;color:#3a5a78}
-.seg-select{font-size:11px;padding:3px 6px;background:#0d1220;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;cursor:pointer}
-.modal-footer{margin-top:12px;display:flex;gap:8px;justify-content:flex-end}
+.seg-select{font-size:11px;padding:3px 5px;background:#0d1220;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;cursor:pointer}
+.modal-footer{margin-top:10px;display:flex;gap:7px;justify-content:flex-end}
+
+/* ══════════════════════════════════════════════════
+   LEAFLET CUSTOM
+══════════════════════════════════════════════════ */
 .leaflet-popup-content-wrapper{background:#0d1626;border:1px solid #1e3a60;color:#b0cce8;border-radius:7px}
 .leaflet-popup-tip{background:#0d1626}
 .leaflet-popup-content{font-family:'Segoe UI',sans-serif;font-size:12px;margin:9px 12px}
@@ -119,118 +234,254 @@ select:focus{outline:none;border-color:#2a5acc}
 .leaflet-control-zoom a:hover{background:#141e30!important}
 .leaflet-control-attribution{background:rgba(8,10,20,.8)!important;color:#3a5070!important;font-size:10px!important}
 .leaflet-control-attribution a{color:#3a6090!important}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — TABLET (≤900px)
+══════════════════════════════════════════════════ */
+@media(max-width:900px){
+  #sidebar{width:260px}
+  #sidebar-inner{min-width:260px}
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — MÓVIL (≤640px)
+══════════════════════════════════════════════════ */
+@media(max-width:640px){
+  /* Header compacto */
+  #header h1{font-size:12px}
+  .sub{display:none}
+  .tag{display:none}
+  #menu-toggle{display:flex;align-items:center;justify-content:center}
+
+  /* Toolbar colapsable */
+  #toolbar{max-height:200px;overflow:hidden}
+
+  /* Algo bar scroll horizontal */
+  #algo-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #algo-bar::-webkit-scrollbar{display:none}
+
+  /* Main: mapa arriba, sidebar como panel deslizable abajo */
+  #main{flex-direction:column}
+  #map{flex:1;min-height:0}
+
+  /* Sidebar: panel bottom sheet */
+  #sidebar{
+    width:100%!important;
+    border-left:none;
+    border-top:1px solid #1e2540;
+    height:var(--panel-h,42vh);
+    flex-shrink:0;
+    transition:height .25s;
+    position:relative;
+  }
+  #sidebar.collapsed{height:36px!important}
+  #sidebar-inner{min-width:0;width:100%}
+
+  /* Toggle: en móvil es un handle horizontal */
+  #sidebar-toggle{
+    position:static;
+    width:100%;height:36px;
+    border-radius:0;
+    border:none;
+    border-bottom:1px solid #1e2540;
+    left:auto;top:auto;
+    transform:none;
+    flex-direction:row;
+    gap:8px;
+    font-size:11px;
+    color:#6a8aaa;
+    font-weight:600;
+    justify-content:center;
+  }
+  #sidebar-toggle::before{content:'';width:36px;height:3px;background:#2a3a50;border-radius:2px;display:block}
+
+  /* Mapa controls: esquina inferior izquierda para no tapar toggle */
+  #map-controls{top:auto;bottom:50px;right:10px}
+
+  /* Stats en 2 columnas en móvil */
+  #stats{grid-template-columns:1fr 1fr}
+}
+
+/* ══════════════════════════════════════════════════
+   DRAG OVERLAY
+══════════════════════════════════════════════════ */
+#drag-overlay{position:fixed;inset:0;background:rgba(10,20,50,.85);z-index:99997;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#6aaeff;font-size:16px;font-weight:600;border:3px dashed #2a5acc;pointer-events:none}
+#drag-overlay.show{display:flex}
+#drag-overlay svg{opacity:.7}
 </style>
 </head>
 <body>
 
+<!-- DRAG DROP OVERLAY -->
+<div id="drag-overlay">
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="8" y="12" width="32" height="28" rx="3" stroke="#6aaeff" stroke-width="2"/><path d="M24 20v12M18 26l6-6 6 6" stroke="#6aaeff" stroke-width="2" stroke-linecap="round"/></svg>
+  Suelta el archivo Excel aquí
+</div>
+
+<!-- HEADER -->
 <div id="header">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="11" stroke="#2a7aff" stroke-width="1.3"/>
-    <path d="M6 12 Q9 6 12 12 Q15 18 18 12" stroke="#ff6b35" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-    <circle cx="6" cy="12" r="2" fill="#22aa55"/>
-    <circle cx="18" cy="12" r="2" fill="#dd3333"/>
-  </svg>
-  <div>
-    <h1>Optimizador de Rutas Comerciales <span class="tag">Lima Metro</span></h1>
-    <div class="sub">Punto de inicio · Prioridad de clientes · 4 algoritmos · OSRM sin API key</div>
+  <div id="header-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" flex-shrink="0">
+      <circle cx="12" cy="12" r="11" stroke="#2a7aff" stroke-width="1.3"/>
+      <path d="M6 12 Q9 6 12 12 Q15 18 18 12" stroke="#ff6b35" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <circle cx="6" cy="12" r="2" fill="#22aa55"/>
+      <circle cx="18" cy="12" r="2" fill="#dd3333"/>
+    </svg>
+    <div>
+      <h1>Rutas Comerciales <span class="tag">Lima</span></h1>
+      <div class="sub">4 algoritmos · OSRM · Sin API key</div>
+    </div>
   </div>
+  <button id="menu-toggle" onclick="toggleToolbar()" title="Menú">☰</button>
 </div>
 
+<!-- TOOLBAR -->
 <div id="toolbar">
-  <label id="upload-zone" for="file-input">↑ Subir Excel / CSV</label>
+  <label id="upload-zone" for="file-input" title="También puedes arrastrar un archivo Excel aquí">↑ Excel / CSV</label>
   <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
-  <button class="btn" onclick="loadDemo()">🗺 Demo 35 pts</button>
+  <button class="btn" onclick="loadDemo()" title="Cargar 35 puntos de ejemplo en Lima">🗺 Demo</button>
   <div class="sep"></div>
-  <button class="btn" id="btn-seg" onclick="openSegModal()" disabled>⭐ Prioridades</button>
+  <button class="btn" id="btn-seg" onclick="openSegModal()" disabled title="Asignar segmento a cada cliente">⭐ Prioridades</button>
   <div class="sep"></div>
-  <button class="btn go" id="btn-run" onclick="runAll()" disabled>⚡ Calcular rutas</button>
-  <button class="btn" id="btn-clear" onclick="clearAll()" disabled>✕ Limpiar</button>
-  <button class="btn exp" id="btn-export" onclick="exportRoute()" disabled>↓ Exportar</button>
+  <button class="btn go" id="btn-run" onclick="runAll()" disabled title="Calcular los 4 algoritmos y mostrar el mejor">⚡ Calcular</button>
+  <button class="btn" id="btn-clear" onclick="clearAll()" disabled title="Limpiar todo">✕</button>
+  <button class="btn exp" id="btn-export" onclick="exportRoute()" disabled title="Exportar ruta activa a Excel">↓ Exportar</button>
 </div>
 
+<!-- ALGO BAR -->
 <div id="algo-bar">
-  <span class="algo-label">Ver algoritmo:</span>
-  <button class="algo-btn selected" id="ab-0" onclick="selectAlgo(0)">① NN + 2-opt</button>
-  <button class="algo-btn" id="ab-1" onclick="selectAlgo(1)">② Or-opt</button>
-  <button class="algo-btn" id="ab-2" onclick="selectAlgo(2)">③ Clarke-Wright</button>
-  <button class="algo-btn" id="ab-3" onclick="selectAlgo(3)">④ Greedy + 3-opt</button>
+  <span class="algo-label">Algoritmo:</span>
+  <button class="algo-btn selected" id="ab-0" onclick="selectAlgo(0)" title="Nearest Neighbor con múltiples inicios + 2-opt">① NN+2opt</button>
+  <button class="algo-btn" id="ab-1" onclick="selectAlgo(1)" title="Reinserción de nodos y segmentos">② Or-opt</button>
+  <button class="algo-btn" id="ab-2" onclick="selectAlgo(2)" title="Fusión de rutas por máximo ahorro">③ Clarke-Wright</button>
+  <button class="algo-btn" id="ab-3" onclick="selectAlgo(3)" title="Aristas cortas + perturbación double-bridge">④ Greedy+3opt</button>
 </div>
 
 <div id="progress"><div id="progress-bar"></div></div>
-<div id="status-bar"><div class="dot" id="sdot"></div><span id="stxt">Carga un Excel o usa el Demo. Configura prioridades y punto de inicio.</span></div>
+<div id="status-bar"><div class="dot" id="sdot"></div><span id="stxt">Sube un Excel o arrastra el archivo. Prueba el Demo para comenzar.</span></div>
 
+<!-- MAIN -->
 <div id="main">
   <div id="map"></div>
+
+  <!-- CONTROLES SOBRE EL MAPA -->
+  <div id="map-controls">
+    <button class="map-btn" id="btn-zoom-route" onclick="zoomToRoute()" title="Centrar en la ruta actual">⊙</button>
+    <button class="map-btn" id="btn-toggle-labels" onclick="toggleLabels()" title="Mostrar/ocultar etiquetas de número">🔢</button>
+    <button class="map-btn" id="btn-satellite" onclick="cycleTiles()" title="Cambiar capa del mapa">🛰</button>
+  </div>
+
   <div id="sidebar">
+    <!-- Handle toggle (desktop: lateral, móvil: top bar) -->
+    <button id="sidebar-toggle" onclick="toggleSidebar()" title="Colapsar panel">◀</button>
 
-    <div id="config-panel">
-      <div class="cfg-title">⚙ Configuración de ruta</div>
-      <div class="cfg-row">
-        <span class="cfg-label">Punto de inicio</span>
-        <select id="start-select" onchange="onStartSelect()">
-          <option value="-1">— Seleccionar cliente —</option>
-        </select>
+    <div id="sidebar-inner">
+      <!-- Header sidebar -->
+      <div id="sb-header">
+        <span class="title">Orden de visita</span>
+        <span class="cnt" id="pcnt">0 pts</span>
       </div>
-      <div id="start-info" class="start-info">Sin punto de inicio. Haz clic en un marcador o selecciona arriba.</div>
-      <div class="cfg-row" style="margin-top:6px">
-        <span class="cfg-label">Tiempo/visita</span>
-        <select id="visit-time" onchange="updateTimeInfo()">
-          <option value="10">10 min (rápido)</option>
-          <option value="20" selected>20 min (estándar)</option>
-          <option value="30">30 min (extendido)</option>
-          <option value="45">45 min (largo)</option>
-          <option value="60">60 min (1 hora)</option>
-        </select>
+
+      <!-- Buscador -->
+      <div id="search-box">
+        <input type="text" id="search-input" placeholder="🔍  Buscar cliente..." oninput="filterList(this.value)">
       </div>
-      <div class="cfg-row">
-        <span class="cfg-label">Hora de salida</span>
-        <input type="time" id="start-time" value="08:00"
-          style="font-size:11px;padding:3px 7px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;flex:1"
-          onchange="updateTimeInfo()">
+
+      <!-- Config -->
+      <div id="config-panel">
+        <div class="cfg-title" onclick="toggleSection('cfg-body','cfg-arrow')">
+          ⚙ Configuración <span class="arrow" id="cfg-arrow">▾</span>
+        </div>
+        <div class="cfg-body" id="cfg-body" style="max-height:200px">
+          <div class="cfg-row">
+            <span class="cfg-label">Punto inicio</span>
+            <select id="start-select" onchange="onStartSelect()">
+              <option value="-1">— Seleccionar —</option>
+            </select>
+          </div>
+          <div id="start-info" class="start-info">Sin punto de inicio. Selecciona arriba o haz clic en un marcador.</div>
+          <div class="cfg-row" style="margin-top:5px">
+            <span class="cfg-label">Tiempo/visita</span>
+            <select id="visit-time" onchange="updateTimeInfo()">
+              <option value="10">10 min</option>
+              <option value="20" selected>20 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+            </select>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Hora salida</span>
+            <input type="time" id="start-time" value="08:00" class="time-input" onchange="updateTimeInfo()">
+          </div>
+          <div id="time-info" class="tip">Configura y calcula para ver el horario.</div>
+        </div>
       </div>
-      <div id="time-info" class="tip">Configura y calcula para ver el horario completo.</div>
-    </div>
 
-    <div id="priority-legend">
-      <div class="pleg-title">⭐ Segmentos de cliente</div>
-      <div class="pleg-row"><div class="pleg-dot" style="background:#ff4444"></div>Clave <span style="font-size:10px;color:#ff6666;margin-left:2px">(visitar primero)</span><span class="pleg-weight">peso ×4</span></div>
-      <div class="pleg-row"><div class="pleg-dot" style="background:#ff9922"></div>Grande<span class="pleg-weight">peso ×3</span></div>
-      <div class="pleg-row"><div class="pleg-dot" style="background:#44aaff"></div>Mediano<span class="pleg-weight">peso ×2</span></div>
-      <div class="pleg-row"><div class="pleg-dot" style="background:#7a7aaa"></div>Pequeño<span class="pleg-weight">peso ×1</span></div>
-      <div class="pleg-row"><div class="pleg-dot" style="background:#22aa55;border-color:#fff"></div>Punto de inicio<span class="pleg-weight">—</span></div>
-    </div>
+      <!-- Leyenda segmentos -->
+      <div id="priority-legend">
+        <div class="pleg-title" onclick="toggleSection('pleg-body','pleg-arrow')">
+          ⭐ Segmentos <span class="arrow" id="pleg-arrow">▾</span>
+        </div>
+        <div class="pleg-body" id="pleg-body" style="max-height:150px">
+          <div class="pleg-row"><div class="pleg-dot" style="background:#ff4444"></div>Clave<span style="font-size:10px;color:#ff7777;margin-left:2px">(1ro)</span><span class="pleg-weight">×4</span></div>
+          <div class="pleg-row"><div class="pleg-dot" style="background:#ff9922"></div>Grande<span class="pleg-weight">×3</span></div>
+          <div class="pleg-row"><div class="pleg-dot" style="background:#44aaff"></div>Mediano<span class="pleg-weight">×2</span></div>
+          <div class="pleg-row"><div class="pleg-dot" style="background:#7a7aaa"></div>Pequeño<span class="pleg-weight">×1</span></div>
+          <div class="pleg-row"><div class="pleg-dot" style="background:#22aa55;border-color:#fff"></div>Inicio<span class="pleg-weight">—</span></div>
+          <!-- Contadores clicables -->
+          <div id="seg-counts"></div>
+        </div>
+      </div>
 
-    <div id="stats">
-      <div class="sc"><div class="sc-l">Distancia</div><div class="sc-v" id="sv-d">—</div></div>
-      <div class="sc"><div class="sc-l">Paradas</div><div class="sc-v" id="sv-s">—</div></div>
-      <div class="sc"><div class="sc-l">Conducción</div><div class="sc-v" id="sv-drive">—</div></div>
-      <div class="sc" style="grid-column:1/-1"><div class="sc-l">Tiempo total (conducción + visitas)</div><div class="sc-v" id="sv-total" style="font-size:18px;color:#6aff8a">—</div></div>
-      <div class="sc" style="grid-column:1/-1"><div class="sc-l">Horario estimado</div><div class="sc-v sm" id="sv-schedule">—</div></div>
-      <div class="sc" style="grid-column:1/-1"><div class="sc-l">Algoritmo activo</div><div class="sc-v sm" id="sv-a">—</div></div>
-    </div>
+      <!-- Stats -->
+      <div id="stats">
+        <div class="sc"><div class="sc-l">Distancia</div><div class="sc-v" id="sv-d">—</div></div>
+        <div class="sc"><div class="sc-l">Paradas</div><div class="sc-v" id="sv-s">—</div></div>
+        <div class="sc"><div class="sc-l">Conducción</div><div class="sc-v" id="sv-drive">—</div></div>
+        <div class="sc sc-full"><div class="sc-l">Tiempo total (conducción + visitas)</div><div class="sc-v big" id="sv-total">—</div></div>
+        <div class="sc sc-full"><div class="sc-l">Horario estimado</div><div class="sc-v sm" id="sv-schedule">—</div></div>
+        <div class="sc sc-full"><div class="sc-l">Algoritmo</div><div class="sc-v sm" id="sv-a">—</div></div>
+      </div>
 
-    <div id="compare-panel">
-      <div class="cp-title">Comparar algoritmos</div>
-      <div id="cp-rows"></div>
-    </div>
+      <!-- Comparativa -->
+      <div id="compare-panel">
+        <div class="cp-title">Comparar algoritmos</div>
+        <div id="cp-rows"></div>
+      </div>
 
-    <div id="route-list"><div class="empty">Ningún punto cargado</div></div>
+      <!-- Lista de paradas -->
+      <div id="search-box" style="display:block;padding:5px 10px;border-bottom:1px solid #141820;flex-shrink:0">
+        <input type="text" id="search-input" placeholder="🔍 Buscar cliente..." oninput="filterList(this.value)"
+          style="width:100%;font-size:11px;padding:5px 8px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit">
+      </div>
+      <div id="route-list"><div class="empty">Ningún punto cargado</div></div>
 
-    <div id="algo-desc">
-      <strong>Prioridades</strong> ajustan distancia efectiva: clientes clave se visitan antes. <strong>Punto de inicio</strong> fijado como nodo 0 en todos los algoritmos.
+      <div id="algo-desc">
+        <strong>①</strong> multi-start NN+2opt · <strong>②</strong> Or-opt reinserción · <strong>③</strong> Clarke-Wright savings · <strong>④</strong> greedy+double-bridge. Verde = mejor distancia.
+      </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL: fixed, fuera del flujo principal -->
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- MODAL PRIORIDADES -->
 <div id="seg-modal">
   <div class="modal-box">
     <div class="modal-title">⭐ Prioridades de clientes</div>
-    <div class="modal-sub">Asigna el segmento a cada cliente. Clave y Grande se visitan primero.</div>
+    <div class="modal-sub">Asigna segmento a cada cliente. Clave y Grande se visitan antes.</div>
+    <input type="text" id="modal-search" placeholder="🔍 Buscar cliente..." oninput="filterModal(this.value)">
+    <div class="modal-bulk">
+      <button class="btn" onclick="setAllSegment('clave')" style="font-size:10px;color:#ff6666;border-color:#4a1a1a">Todos → Clave</button>
+      <button class="btn" onclick="setAllSegment('grande')" style="font-size:10px;color:#ffaa55;border-color:#4a2a0a">→ Grande</button>
+      <button class="btn" onclick="setAllSegment('mediano')" style="font-size:10px;color:#55aaff;border-color:#0a2a4a">→ Mediano</button>
+      <button class="btn" onclick="setAllSegment('pequeño')" style="font-size:10px">→ Pequeño</button>
+    </div>
     <div id="modal-list"></div>
     <div class="modal-footer">
-      <button class="btn" onclick="setAllSegment('pequeño')">Todos → Pequeño</button>
-      <button class="btn go" onclick="closeSegModal()">✓ Guardar</button>
+      <button class="btn go" onclick="closeSegModal()">✓ Guardar y cerrar</button>
     </div>
   </div>
 </div>
@@ -238,144 +489,257 @@ select:focus{outline:none;border-color:#2a5acc}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-// ─── UTILIDAD: getElementById con guard ──────────────────────────
-// Evita "Cannot set properties of null" en todos los getElementById
-function el(id){ return document.getElementById(id); }
-function setText(id, val){
-  var node = el(id);
-  if(node) node.textContent = val;
-}
-function setHtml(id, val){
-  var node = el(id);
-  if(node) node.innerHTML = val;
-}
-function setStyle(id, prop, val){
-  var node = el(id);
-  if(node) node.style[prop] = val;
-}
-function setProp(id, prop, val){
-  var node = el(id);
-  if(node) node[prop] = val;
+// ══════════════════════════════════════════════════
+//  UTILIDADES DOM (guard anti-null)
+// ══════════════════════════════════════════════════
+function el(id){return document.getElementById(id);}
+function setText(id,v){var n=el(id);if(n)n.textContent=v;}
+function setHtml(id,v){var n=el(id);if(n)n.innerHTML=v;}
+function setStyle(id,p,v){var n=el(id);if(n)n.style[p]=v;}
+function setProp(id,p,v){var n=el(id);if(n)n[p]=v;}
+
+// ══════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════
+function toast(msg,type,dur){
+  type=type||'info'; dur=dur||2800;
+  var c=el('toast-container');if(!c)return;
+  var t=document.createElement('div');
+  t.className='toast '+(type==='ok'?'ok':type==='warn'?'warn':type==='err'?'err':'');
+  t.textContent=msg;
+  c.appendChild(t);
+  requestAnimationFrame(function(){t.classList.add('show');});
+  setTimeout(function(){t.classList.remove('show');setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},300);},dur);
 }
 
-// ─── CONSTANTES ──────────────────────────────────────────────────
-var NAMES  = ['NN + 2-opt','Or-opt','Clarke-Wright Savings','Greedy + 3-opt'];
-var COLORS = ['#ff6b35','#22aaff','#ffdd22','#cc44ff'];
-var SEG_CONFIG = {
-  'clave':   {label:'Clave',   color:'#ff4444', weight:4},
-  'grande':  {label:'Grande',  color:'#ff9922', weight:3},
-  'mediano': {label:'Mediano', color:'#44aaff', weight:2},
-  'pequeño': {label:'Pequeño', color:'#7a7aaa', weight:1}
+// ══════════════════════════════════════════════════
+//  CONSTANTES
+// ══════════════════════════════════════════════════
+var NAMES=['NN + 2-opt','Or-opt','Clarke-Wright','Greedy + 3-opt'];
+var COLORS=['#ff6b35','#22aaff','#ffdd22','#cc44ff'];
+var SEG_CONFIG={
+  'clave':  {label:'Clave',  color:'#ff4444',weight:4},
+  'grande': {label:'Grande', color:'#ff9922',weight:3},
+  'mediano':{label:'Mediano',color:'#44aaff',weight:2},
+  'pequeño':{label:'Pequeño',color:'#7a7aaa',weight:1}
 };
 
-// ─── ESTADO GLOBAL ────────────────────────────────────────────────
-var map, points=[], results=[null,null,null,null];
-var activeAlgo=0, startIdx=0, markersLayer=[], routePolylines=[];
-// Token para cancelar callbacks OSRM obsoletos
-var osrmToken = 0;
+// ══════════════════════════════════════════════════
+//  ESTADO GLOBAL
+// ══════════════════════════════════════════════════
+var map,points=[],results=[null,null,null,null];
+var activeAlgo=0,startIdx=0,markersLayer=[],routePolylines=[];
+var osrmToken=0,showNumbers=true,sidebarOpen=true;
+var tileIdx=0,tileLayers=[];
+var activeSegFilter=null; // null = mostrar todos
 
-// ─── MAPA ────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', function(){
-  map = L.map('map', {center:[-12.1,-77.03], zoom:13});
-  L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    {attribution:'Esri',maxZoom:19}
-  ).addTo(map);
-  L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-    {attribution:'© OSM © CARTO',maxZoom:19,opacity:0.8}
-  ).addTo(map);
+// ══════════════════════════════════════════════════
+//  MAPA
+// ══════════════════════════════════════════════════
+var TILE_CONFIGS=[
+  {url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+   label:'🛰 Satelital',attr:'Esri',max:19},
+  {url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+   label:'🌑 Oscuro',attr:'© OSM © CARTO',max:19},
+  {url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+   label:'🗺 Callejero',attr:'© OpenStreetMap',max:19}
+];
+var labelLayer=null;
+
+window.addEventListener('DOMContentLoaded',function(){
+  map=L.map('map',{center:[-12.1,-77.03],zoom:13,zoomControl:true});
+  // Capa base satelital
+  tileLayers[0]=L.tileLayer(TILE_CONFIGS[0].url,{attribution:TILE_CONFIGS[0].attr,maxZoom:19}).addTo(map);
+  tileLayers[1]=L.tileLayer(TILE_CONFIGS[1].url,{attribution:TILE_CONFIGS[1].attr,maxZoom:19});
+  tileLayers[2]=L.tileLayer(TILE_CONFIGS[2].url,{attribution:TILE_CONFIGS[2].attr,maxZoom:19});
+  // Labels encima
+  labelLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+    {attribution:'© CARTO',maxZoom:19,opacity:0.8}).addTo(map);
+
+  // Drag & drop global
+  document.body.addEventListener('dragenter',function(e){e.preventDefault();el('drag-overlay').classList.add('show');});
+  document.body.addEventListener('dragleave',function(e){if(!e.relatedTarget||e.relatedTarget===document.documentElement)el('drag-overlay').classList.remove('show');});
+  document.body.addEventListener('dragover',function(e){e.preventDefault();});
+  document.body.addEventListener('drop',function(e){
+    e.preventDefault();el('drag-overlay').classList.remove('show');
+    var f=e.dataTransfer.files[0];if(!f)return;
+    readFile(f);
+  });
+  // Drag sobre upload-zone
+  var uz=el('upload-zone');
+  if(uz){
+    uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('dragover');});
+    uz.addEventListener('dragleave',function(){uz.classList.remove('dragover');});
+    uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('dragover');var f=e.dataTransfer.files[0];if(f)readFile(f);});
+  }
+  // Responsive: ajustar handle del sidebar en móvil
+  handleResize();
+  window.addEventListener('resize',handleResize);
 });
 
-// ─── UI HELPERS ───────────────────────────────────────────────────
-function setStatus(msg, s){
-  setText('stxt', msg);
-  var d = el('sdot');
-  if(d) d.className = 'dot ' + ({run:'run',ok:'ok',warn:'warn'}[s]||'');
+function handleResize(){
+  var isMobile=window.innerWidth<=640;
+  var tog=el('sidebar-toggle');
+  if(!tog)return;
+  if(isMobile){
+    tog.title='Expandir/colapsar panel';
+    tog.onclick=function(){toggleSidebarMobile();};
+  }else{
+    tog.onclick=function(){toggleSidebar();};
+  }
 }
-function setProgress(p){ setStyle('progress-bar','width',p+'%'); }
-function sleep(ms){ return new Promise(function(r){setTimeout(r,ms);}); }
-function fmtMin(m){
-  var h=Math.floor(m/60), mn=Math.round(m%60);
-  return h>0 ? (h+'h '+(mn>0?mn+'min':'')) : (mn+'min');
+
+// ══════════════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════════════
+function setStatus(msg,s){
+  setText('stxt',msg);
+  var d=el('sdot');
+  if(d)d.className='dot '+({run:'run',ok:'ok',warn:'warn'}[s]||'');
 }
-function addMinToTime(timeStr, mins){
-  var parts=timeStr.split(':'), h=parseInt(parts[0]), m=parseInt(parts[1]);
-  var total=h*60+m+Math.round(mins);
-  var nh=Math.floor(total/60)%24, nm=total%60;
-  return (nh<10?'0':'')+nh+':'+(nm<10?'0':'')+nm;
+function setProgress(p){setStyle('progress-bar','width',p+'%');}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function fmtMin(m){var h=Math.floor(m/60),mn=Math.round(m%60);return h>0?(h+'h '+(mn>0?mn+'min':'')):(mn+'min');}
+function addMinToTime(t,mins){
+  var p=t.split(':'),h=parseInt(p[0]),m=parseInt(p[1]),tot=h*60+m+Math.round(mins);
+  var nh=Math.floor(tot/60)%24,nm=tot%60;
+  return(nh<10?'0':'')+nh+':'+(nm<10?'0':'')+nm;
 }
 function updateTimeInfo(){
-  var vm = parseInt((el('visit-time')||{value:'20'}).value)||20;
-  var st = (el('start-time')||{value:'08:00'}).value||'08:00';
-  if(!points.length){ setText('time-info','Configura y calcula para ver el horario completo.'); return; }
-  setText('time-info', points.length+' visitas × '+vm+' min = '+fmtMin(points.length*vm)+'. Salida: '+st);
+  var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
+  var st=(el('start-time')||{value:'08:00'}).value||'08:00';
+  if(!points.length){setText('time-info','Configura y calcula para ver el horario.');return;}
+  setText('time-info',points.length+' visitas × '+vm+' min = '+fmtMin(points.length*vm)+'. Salida: '+st);
+}
+function toggleToolbar(){
+  var tb=el('toolbar');if(!tb)return;
+  tb.classList.toggle('collapsed');
+}
+function toggleSidebar(){
+  var sb=el('sidebar'),tog=el('sidebar-toggle');if(!sb)return;
+  sidebarOpen=!sidebarOpen;
+  sb.classList.toggle('collapsed',!sidebarOpen);
+  if(tog)tog.textContent=sidebarOpen?'▶':'◀';
+  setTimeout(function(){if(map)map.invalidateSize();},220);
+}
+function toggleSidebarMobile(){
+  var sb=el('sidebar');if(!sb)return;
+  var isCollapsed=sb.classList.contains('collapsed');
+  sb.classList.toggle('collapsed',!isCollapsed);
+  setTimeout(function(){if(map)map.invalidateSize();},270);
+}
+function toggleSection(bodyId,arrowId){
+  var body=el(bodyId),arrow=el(arrowId);if(!body)return;
+  var collapsed=body.classList.toggle('collapsed');
+  if(arrow)arrow.textContent=collapsed?'▸':'▾';
+  if(collapsed)body.style.maxHeight='0';
+  else body.style.maxHeight='300px';
 }
 
-// ─── FILE INPUT ───────────────────────────────────────────────────
-el('file-input').addEventListener('change', function(e){
-  var f = e.target.files[0]; if(!f) return;
-  setStatus('Leyendo "'+f.name+'"...','run'); setProgress(10);
-  var r = new FileReader();
-  r.onload = function(ev){
+// ══════════════════════════════════════════════════
+//  CONTROLES SOBRE EL MAPA
+// ══════════════════════════════════════════════════
+function zoomToRoute(){
+  if(!points.length){toast('No hay puntos cargados','warn');return;}
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  var lats=order.map(function(i){return points[i].lat;}),lons=order.map(function(i){return points[i].lon;});
+  map.fitBounds([[Math.min.apply(null,lats),Math.min.apply(null,lons)],[Math.max.apply(null,lats),Math.max.apply(null,lons)]],{padding:[50,50],animate:true});
+}
+function toggleLabels(){
+  showNumbers=!showNumbers;
+  var b=el('btn-toggle-labels');if(b)b.classList.toggle('active',showNumbers);
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  renderMarkers(order,activeAlgo,startIdx);
+  toast(showNumbers?'Números activados':'Números ocultos','ok',1500);
+}
+function cycleTiles(){
+  if(tileLayers[tileIdx])map.removeLayer(tileLayers[tileIdx]);
+  tileIdx=(tileIdx+1)%3;
+  tileLayers[tileIdx].addTo(map);
+  // Labels encima solo en satelital/oscuro
+  if(labelLayer){if(tileIdx===2)map.removeLayer(labelLayer);else labelLayer.addTo(map);}
+  var b=el('btn-satellite');
+  if(b)b.title=TILE_CONFIGS[(tileIdx+1)%3].label;
+  toast('Mapa: '+TILE_CONFIGS[tideIdx=tileIdx,tileIdx].label,'ok',1500);
+}
+
+// ══════════════════════════════════════════════════
+//  FILE INPUT
+// ══════════════════════════════════════════════════
+el('file-input').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;
+  readFile(f);this.value='';
+});
+function readFile(f){
+  setStatus('Leyendo "'+f.name+'"...','run');setProgress(10);
+  var r=new FileReader();
+  r.onload=function(ev){
     try{
-      var wb = XLSX.read(ev.target.result,{type:'array'});
-      var rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+      var wb=XLSX.read(ev.target.result,{type:'array'});
+      var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
       setProgress(40);
-      var pts = parseRows(rows);
+      var pts=parseRows(rows);
       loadPoints(pts);
       setStatus(pts.length+' puntos cargados desde "'+f.name+'"','ok');
-      setProgress(100); setTimeout(function(){setProgress(0);},700);
-    }catch(err){ setStatus('Error: '+err.message,'warn'); setProgress(0); }
+      toast(pts.length+' puntos cargados','ok');
+      setProgress(100);setTimeout(function(){setProgress(0);},700);
+    }catch(err){
+      setStatus('Error: '+err.message,'warn');
+      toast(err.message,'err',4000);
+      setProgress(0);
+    }
   };
   r.readAsArrayBuffer(f);
-  this.value='';
-});
+}
 
+// ══════════════════════════════════════════════════
+//  PARSEO DE EXCEL
+// ══════════════════════════════════════════════════
 function findCol(hdr){
-  var keys = Array.prototype.slice.call(arguments,1);
+  var keys=Array.prototype.slice.call(arguments,1);
   for(var k=0;k<keys.length;k++){
-    var i = hdr.findIndex(function(h){return h.indexOf(keys[k])>=0||keys[k].indexOf(h)>=0;});
-    if(i>=0) return i;
+    var i=hdr.findIndex(function(h){return h.indexOf(keys[k])>=0||keys[k].indexOf(h)>=0;});
+    if(i>=0)return i;
   }
   return -1;
 }
-function toNum(v){ if(v===null||v===undefined||v==='')return null; var n=parseFloat(String(v).replace(',','.')); return isNaN(n)?null:n; }
-function splitCoord(s){ var m=String(s).trim().match(/(-?\d{1,3}\.?\d*)[,\s;|]+(-?\d{1,3}\.?\d*)/); return m?[parseFloat(m[1]),parseFloat(m[2])]:null; }
-
+function toNum(v){if(v===null||v===undefined||v==='')return null;var n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n;}
+function splitCoord(s){var m=String(s).trim().match(/(-?\d{1,3}\.?\d*)[,\s;|]+(-?\d{1,3}\.?\d*)/);return m?[parseFloat(m[1]),parseFloat(m[2])]:null;}
 function parseRows(rows){
-  if(!rows||rows.length<2) throw new Error('Archivo vacío.');
-  var hdr = rows[0].map(function(h){return String(h||'').toLowerCase().trim();});
-  var iN   = findCol(hdr,'nombre','name','cliente','razon','comercio','tienda','empresa','negocio','local');
-  var iA   = findCol(hdr,'direccion','address','calle','domicilio','ubicacion','dir');
-  var iC   = findCol(hdr,'coordenadas','coords','coordinates','latlong','latlng','google');
-  var iLat = findCol(hdr,'lat','latitude','latitud');
-  var iLon = findCol(hdr,'lng','lon','long','longitude','longitud');
-  var iSeg = findCol(hdr,'segmento','segment','tipo','type','prioridad','priority','categoria');
-  var out = [];
+  if(!rows||rows.length<2)throw new Error('Archivo vacío.');
+  var hdr=rows[0].map(function(h){return String(h||'').toLowerCase().trim();});
+  var iN=findCol(hdr,'nombre','name','cliente','razon','comercio','tienda','empresa','negocio','local');
+  var iA=findCol(hdr,'direccion','address','calle','domicilio','ubicacion','dir');
+  var iC=findCol(hdr,'coordenadas','coords','coordinates','latlong','latlng','google');
+  var iLat=findCol(hdr,'lat','latitude','latitud');
+  var iLon=findCol(hdr,'lng','lon','long','longitude','longitud');
+  var iSeg=findCol(hdr,'segmento','segment','tipo','type','prioridad','priority','categoria');
+  var out=[];
   for(var i=1;i<rows.length;i++){
     var row=rows[i];
-    if(!row||row.every(function(c){return !c;})) continue;
-    var lat=null, lon=null;
+    if(!row||row.every(function(c){return !c;}))continue;
+    var lat=null,lon=null;
     if(iC>=0&&row[iC]){var p=splitCoord(row[iC]);if(p){lat=p[0];lon=p[1];}}
     if((lat===null||lon===null)&&iLat>=0&&iLon>=0){var la=toNum(row[iLat]),lo=toNum(row[iLon]);if(la!==null&&lo!==null){lat=la;lon=lo;}}
-    if(lat===null||lon===null) continue;
-    if(lat<-13||lat>-11||lon<-77.5||lon>-76.5) continue;
+    if(lat===null||lon===null)continue;
+    if(lat<-13||lat>-11||lon<-77.5||lon>-76.5)continue;
     var seg='pequeño';
     if(iSeg>=0&&row[iSeg]){
       var sv=String(row[iSeg]).toLowerCase().trim();
-      if(sv.indexOf('clave')>=0||sv==='1') seg='clave';
-      else if(sv.indexOf('grande')>=0||sv==='2') seg='grande';
-      else if(sv.indexOf('mediano')>=0||sv==='3') seg='mediano';
+      if(sv.indexOf('clave')>=0||sv==='1')seg='clave';
+      else if(sv.indexOf('grande')>=0||sv==='2')seg='grande';
+      else if(sv.indexOf('mediano')>=0||sv==='3')seg='mediano';
     }
-    out.push({id:i, name:(iN>=0&&row[iN])?String(row[iN]).trim():'Punto '+i,
-              address:(iA>=0&&row[iA])?String(row[iA]).trim():'', lat:lat, lon:lon, segment:seg});
+    out.push({id:i,name:(iN>=0&&row[iN])?String(row[iN]).trim():'Punto '+i,
+              address:(iA>=0&&row[iA])?String(row[iA]).trim():'',lat:lat,lon:lon,segment:seg});
   }
-  if(out.length<2) throw new Error('No se encontraron coordenadas válidas en Lima.');
+  if(out.length<2)throw new Error('Sin coordenadas válidas en Lima. Necesita columnas lat/lon o "coordenadas".');
   return out;
 }
 
-// ─── DEMO ─────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  DEMO
+// ══════════════════════════════════════════════════
 function loadDemo(){
   var raw=[
     ['Distribuidora Central Lima','Av. Javier Prado Este 3000',-12.0990,-77.0060,'clave'],
@@ -414,380 +778,367 @@ function loadDemo(){
     ['Minimarket Santiago','Av. Javier Prado E 5200',-12.0680,-76.9910,'pequeño'],
     ['Bodega La Encalada','Av. La Encalada 250',-12.1100,-77.0010,'pequeño']
   ];
-  var pts = raw.map(function(r,i){
-    return {id:i+1, name:r[0], address:r[1], lat:r[2], lon:r[3], segment:r[4]};
-  });
-  loadPoints(pts);
-  setStatus('Demo 35 pts cargado (3 Clave, 4 Grande, 7 Mediano, 21 Pequeño). Configura inicio y calcula.','ok');
+  loadPoints(raw.map(function(r,i){return{id:i+1,name:r[0],address:r[1],lat:r[2],lon:r[3],segment:r[4]};}));
+  toast('Demo cargado: 35 puntos en Lima','ok');
+  setStatus('Demo 35 pts. Configura punto de inicio y presiona ⚡ Calcular.','ok');
 }
 
-// ─── CARGAR PUNTOS ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  CARGAR PUNTOS
+// ══════════════════════════════════════════════════
 function loadPoints(pts){
   clearAll(false);
-  points = pts;
-  startIdx = 0;
-  renderMarkers(pts.map(function(_,i){return i;}), 0, 0);
+  points=pts; startIdx=0; activeSegFilter=null;
+  renderMarkers(pts.map(function(_,i){return i;}),0,0);
   renderList(pts.map(function(_,i){return i;}));
   populateStartSelect();
   updateStartInfo();
   updateTimeInfo();
+  updateSegCounts();
   setProp('btn-run','disabled',false);
   setProp('btn-clear','disabled',false);
   setProp('btn-seg','disabled',false);
-  setText('pcnt', pts.length+' pts');
+  setStyle('search-box','display','block');
+  setText('pcnt',pts.length+' pts');
   if(pts.length>0){
-    var lats=pts.map(function(p){return p.lat;}), lons=pts.map(function(p){return p.lon;});
-    map.fitBounds([[Math.min.apply(null,lats),Math.min.apply(null,lons)],
-                   [Math.max.apply(null,lats),Math.max.apply(null,lons)]],{padding:[50,50]});
+    var lats=pts.map(function(p){return p.lat;}),lons=pts.map(function(p){return p.lon;});
+    map.fitBounds([[Math.min.apply(null,lats),Math.min.apply(null,lons)],[Math.max.apply(null,lats),Math.max.apply(null,lons)]],{padding:[50,50]});
   }
 }
 
-// ─── PUNTO DE INICIO ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  CONTADORES DE SEGMENTO (clicables para filtrar)
+// ══════════════════════════════════════════════════
+function updateSegCounts(){
+  var c=el('seg-counts');if(!c)return;
+  var counts={clave:0,grande:0,mediano:0,'pequeño':0};
+  points.forEach(function(p){counts[p.segment||'pequeño']++;});
+  c.innerHTML='';
+  ['clave','grande','mediano','pequeño'].forEach(function(s){
+    if(!counts[s])return;
+    var sc=SEG_CONFIG[s];
+    var span=document.createElement('span');
+    span.className='seg-count'+(activeSegFilter===s?' ':' ');
+    span.style.background=sc.color+'22';
+    span.style.color=sc.color;
+    span.textContent=sc.label+' '+counts[s];
+    span.setAttribute('data-seg',s);
+    span.onclick=function(){
+      activeSegFilter=(activeSegFilter===s)?null:s;
+      filterBySegment(activeSegFilter);
+      updateSegCounts();
+    };
+    if(activeSegFilter&&activeSegFilter!==s)span.classList.add('dimmed');
+    c.appendChild(span);
+  });
+}
+function filterBySegment(seg){
+  document.querySelectorAll('.ri').forEach(function(row){
+    var idx=parseInt(row.getAttribute('data-idx'));
+    if(isNaN(idx))return;
+    var p=points[idx];if(!p)return;
+    row.classList.toggle('filtered-out',!!(seg&&(p.segment||'pequeño')!==seg));
+  });
+  // Filtrar marcadores
+  markersLayer.forEach(function(m,i){
+    var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,ii){return ii;});
+    if(i>=order.length)return;
+    var p=points[order[i]];if(!p)return;
+    var hide=!!(seg&&(p.segment||'pequeño')!==seg&&order[i]!==startIdx);
+    if(hide)m.setOpacity(0.15);else m.setOpacity(1);
+  });
+  toast(seg?('Mostrando solo: '+SEG_CONFIG[seg].label):'Mostrando todos','ok',1800);
+}
+
+// ══════════════════════════════════════════════════
+//  BUSCADOR DE CLIENTES
+// ══════════════════════════════════════════════════
+function filterList(q){
+  q=q.toLowerCase().trim();
+  document.querySelectorAll('.ri').forEach(function(row){
+    if(row.classList.contains('filtered-out'))return;
+    var name=(row.querySelector('.rname')||{}).textContent||'';
+    var addr=(row.querySelector('.raddr')||{}).textContent||'';
+    var match=!q||name.toLowerCase().indexOf(q)>=0||addr.toLowerCase().indexOf(q)>=0;
+    row.style.display=match?'':'none';
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  PUNTO DE INICIO
+// ══════════════════════════════════════════════════
 function populateStartSelect(){
-  var sel = el('start-select');
-  if(!sel) return;
-  sel.innerHTML = '';
+  var sel=el('start-select');if(!sel)return;
+  sel.innerHTML='';
   points.forEach(function(p,i){
-    var opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = '['+SEG_CONFIG[p.segment||'pequeño'].label+'] '+p.name;
-    if(i===startIdx) opt.selected = true;
+    var opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent='['+SEG_CONFIG[p.segment||'pequeño'].label+'] '+p.name;
+    if(i===startIdx)opt.selected=true;
     sel.appendChild(opt);
   });
 }
 function onStartSelect(){
-  var sel = el('start-select');
-  if(!sel) return;
-  startIdx = parseInt(sel.value)||0;
+  var sel=el('start-select');if(!sel)return;
+  startIdx=parseInt(sel.value)||0;
   updateStartInfo();
-  var currentOrder = results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
-  renderMarkers(currentOrder, activeAlgo, startIdx);
-  renderList(currentOrder);
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  renderMarkers(order,activeAlgo,startIdx);
+  renderList(order);
+  toast('Inicio: '+points[startIdx].name,'ok',1800);
 }
 function updateStartInfo(){
-  var node = el('start-info');
-  if(!node) return;
-  if(!points.length){ node.textContent='Sin punto de inicio.'; node.className='start-info'; return; }
-  var p = points[startIdx];
-  if(!p){ node.textContent='Sin punto de inicio.'; node.className='start-info'; return; }
-  var sc = SEG_CONFIG[p.segment||'pequeño'];
-  node.textContent = 'Inicio: '+p.name+' ('+sc.label+')'+(p.address?' · '+p.address:'');
-  node.className = 'start-info active';
+  var node=el('start-info');if(!node)return;
+  if(!points.length){node.textContent='Sin punto de inicio.';node.className='start-info';return;}
+  var p=points[startIdx];if(!p){node.textContent='Sin punto.';node.className='start-info';return;}
+  node.textContent='★ '+p.name+' ('+SEG_CONFIG[p.segment||'pequeño'].label+')'+(p.address?' · '+p.address:'');
+  node.className='start-info active';
 }
 
-// ─── MODAL SEGMENTOS ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  MODAL PRIORIDADES
+// ══════════════════════════════════════════════════
 function openSegModal(){
-  var list = el('modal-list');
-  if(!list) return;
-  list.innerHTML = '';
+  var list=el('modal-list');if(!list)return;
+  list.innerHTML='';
   points.forEach(function(p,i){
-    var sc = SEG_CONFIG[p.segment||'pequeño'];
-    var div = document.createElement('div');
-    div.className = 'modal-item';
-    div.innerHTML =
+    var sc=SEG_CONFIG[p.segment||'pequeño'];
+    var div=document.createElement('div');
+    div.className='modal-item';
+    div.setAttribute('data-name',p.name.toLowerCase());
+    div.innerHTML=
       '<div class="modal-dot" style="background:'+sc.color+'" data-dot="'+i+'"></div>'+
-      '<div style="flex:1;min-width:0"><div class="modal-name">'+p.name+'</div>'+
-      (p.address?'<div class="modal-addr">'+p.address+'</div>':'')+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="modal-name">'+p.name+'</div>'+
+        (p.address?'<div class="modal-addr">'+p.address+'</div>':'')+
+      '</div>'+
       '<select class="seg-select" data-idx="'+i+'">'+
         ['clave','grande','mediano','pequeño'].map(function(s){
           return '<option value="'+s+'"'+(p.segment===s?' selected':'')+'>'+
-            ({clave:'⭐ Clave',grande:'🔶 Grande',mediano:'🔷 Mediano','pequeño':'· Pequeño'}[s])+'</option>';
+            {clave:'⭐ Clave',grande:'🔶 Grande',mediano:'🔷 Mediano','pequeño':'· Pequeño'}[s]+'</option>';
         }).join('')+
       '</select>';
     div.querySelector('.seg-select').addEventListener('change',function(){
-      var idx = parseInt(this.getAttribute('data-idx'));
-      points[idx].segment = this.value;
-      var dot = div.querySelector('.modal-dot');
-      if(dot) dot.style.background = SEG_CONFIG[this.value].color;
+      var idx=parseInt(this.getAttribute('data-idx'));
+      points[idx].segment=this.value;
+      var dot=div.querySelector('.modal-dot');
+      if(dot)dot.style.background=SEG_CONFIG[this.value].color;
     });
     list.appendChild(div);
   });
+  var ms=el('modal-search');if(ms)ms.value='';
   el('seg-modal').classList.add('open');
 }
 function closeSegModal(){
-  var modal = el('seg-modal');
-  if(modal) modal.classList.remove('open');
-  var currentOrder = results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
-  renderMarkers(currentOrder, activeAlgo, startIdx);
-  renderList(currentOrder);
+  var m=el('seg-modal');if(m)m.classList.remove('open');
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  renderMarkers(order,activeAlgo,startIdx);
+  renderList(order);
   populateStartSelect();
   updateStartInfo();
+  updateSegCounts();
+  toast('Prioridades guardadas','ok',1800);
 }
 function setAllSegment(seg){
   points.forEach(function(p){p.segment=seg;});
   openSegModal();
 }
-el('seg-modal').addEventListener('click',function(e){ if(e.target===this) closeSegModal(); });
-
-// ─── MARCADORES ───────────────────────────────────────────────────
-function makeIcon(num, bg, isStart){
-  var sz = isStart?28:24;
-  var border = isStart?'3px solid #fff':'2px solid rgba(255,255,255,.7)';
-  var shadow = isStart?'0 0 0 3px rgba(34,170,85,.45),0 2px 8px rgba(0,0,0,.6)':'0 2px 6px rgba(0,0,0,.5)';
-  return L.divIcon({
-    html:'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+bg+
-         ';border:'+border+';display:flex;align-items:center;justify-content:center;'+
-         'font-size:'+(isStart?11:10)+'px;font-weight:700;color:#fff;box-shadow:'+shadow+'">'+num+'</div>',
-    className:'', iconSize:[sz,sz], iconAnchor:[sz/2,sz/2], popupAnchor:[0,-sz/2-2]
+function filterModal(q){
+  q=q.toLowerCase().trim();
+  document.querySelectorAll('#modal-list .modal-item').forEach(function(item){
+    var name=item.getAttribute('data-name')||'';
+    item.classList.toggle('hidden',!!(q&&name.indexOf(q)<0));
   });
 }
-function renderMarkers(order, aIdx, sIdx){
+el('seg-modal').addEventListener('click',function(e){if(e.target===this)closeSegModal();});
+
+// ══════════════════════════════════════════════════
+//  MARCADORES
+// ══════════════════════════════════════════════════
+function makeIcon(num,bg,isStart){
+  var sz=isStart?28:24,fs=isStart?11:10;
+  var border=isStart?'3px solid #fff':'2px solid rgba(255,255,255,.7)';
+  var shadow=isStart?'0 0 0 3px rgba(34,170,85,.45),0 2px 8px rgba(0,0,0,.6)':'0 2px 6px rgba(0,0,0,.5)';
+  var label=showNumbers?num:'';
+  return L.divIcon({
+    html:'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+bg+';border:'+border+
+         ';display:flex;align-items:center;justify-content:center;font-size:'+fs+'px;font-weight:700;color:#fff;box-shadow:'+shadow+'">'+label+'</div>',
+    className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],popupAnchor:[0,-sz/2-2]
+  });
+}
+function renderMarkers(order,aIdx,sIdx){
   markersLayer.forEach(function(m){map.removeLayer(m);}); markersLayer=[];
   order.forEach(function(idx,pos){
-    var p = points[idx];
-    if(!p) return;
-    var isStart = (idx===sIdx);
-    var color = isStart?'#22aa55':SEG_CONFIG[p.segment||'pequeño'].color;
-    var sc = SEG_CONFIG[p.segment||'pequeño'];
-    var m = L.marker([p.lat,p.lon],{icon:makeIcon(pos+1,color,isStart)}).addTo(map);
+    var p=points[idx];if(!p)return;
+    var isStart=(idx===sIdx);
+    var color=isStart?'#22aa55':SEG_CONFIG[p.segment||'pequeño'].color;
+    var sc=SEG_CONFIG[p.segment||'pequeño'];
+    var m=L.marker([p.lat,p.lon],{icon:makeIcon(pos+1,color,isStart)}).addTo(map);
     m.bindPopup(
       '<div style="min-width:170px">'+
-      '<div style="font-size:12px;font-weight:700;color:#6aaeff;margin-bottom:4px">'+(pos+1)+'. '+p.name+'</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#6aaeff;margin-bottom:3px">'+(pos+1)+'. '+p.name+'</div>'+
       (p.address?'<div style="color:#6a8aaa;font-size:11px;margin-bottom:3px">'+p.address+'</div>':'')+
       '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'+
         '<div style="width:9px;height:9px;border-radius:50%;background:'+sc.color+'"></div>'+
         '<span style="font-size:11px;color:'+sc.color+'">'+sc.label+'</span>'+
       '</div>'+
       (isStart
-        ? '<div style="font-size:10px;color:#22aa55;font-weight:600">★ PUNTO DE INICIO</div>'
-        : '<button onclick="setStartFromMap('+idx+')" style="font-size:10px;padding:2px 8px;background:#0d1e0d;border:1px solid #2a5a2a;color:#6aaa6a;border-radius:3px;cursor:pointer">Establecer como inicio</button>'
+        ?'<div style="font-size:10px;color:#22aa55;font-weight:600">★ PUNTO DE INICIO</div>'
+        :'<button onclick="setStartFromMap('+idx+')" style="font-size:10px;padding:3px 8px;background:#0d1e0d;border:1px solid #2a5a2a;color:#6aaa6a;border-radius:3px;cursor:pointer;width:100%;margin-top:2px">Establecer como inicio</button>'
       )+'</div>'
     );
+    if(activeSegFilter&&(p.segment||'pequeño')!==activeSegFilter&&!isStart)m.setOpacity(0.15);
     markersLayer.push(m);
   });
 }
 function setStartFromMap(idx){
-  startIdx = idx;
-  var sel = el('start-select');
-  if(sel) sel.value = idx;
+  startIdx=idx;
+  var sel=el('start-select');if(sel)sel.value=idx;
   updateStartInfo();
-  var currentOrder = results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
-  renderMarkers(currentOrder, activeAlgo, startIdx);
-  renderList(currentOrder);
-  setStatus('Inicio → '+points[idx].name+'. Vuelve a calcular para actualizar la ruta.','ok');
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  renderMarkers(order,activeAlgo,startIdx);
+  renderList(order);
+  toast('Inicio → '+points[idx].name,'ok',2000);
+  setStatus('Inicio → '+points[idx].name+'. Recalcula para aplicar.','ok');
 }
-function setStartFromList(idx, e){
+function setStartFromList(idx,e){
   e.stopPropagation();
-  startIdx = idx;
-  var sel = el('start-select');
-  if(sel) sel.value = idx;
+  startIdx=idx;
+  var sel=el('start-select');if(sel)sel.value=idx;
   updateStartInfo();
-  var currentOrder = results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
-  renderMarkers(currentOrder, activeAlgo, startIdx);
-  renderList(currentOrder);
-  setStatus('Inicio → '+points[idx].name+'. Vuelve a calcular para optimizar desde este punto.','ok');
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  renderMarkers(order,activeAlgo,startIdx);
+  renderList(order);
+  toast('Inicio → '+points[idx].name,'ok',2000);
 }
-function clearLines(){ routePolylines.forEach(function(l){map.removeLayer(l);}); routePolylines=[]; }
+function clearLines(){routePolylines.forEach(function(l){map.removeLayer(l);});routePolylines=[];}
 
-// ─── DISTANCIAS ───────────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  DISTANCIAS
+// ══════════════════════════════════════════════════
 function hav(a,b){
   var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
   var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
-function buildD(pts, sIdx){
-  var n=pts.length, D=[];
-  for(var i=0;i<n;i++) D[i]=new Float64Array(n);
-  for(var i=0;i<n;i++) for(var j=i+1;j<n;j++){
+function buildD(pts,sIdx){
+  var n=pts.length,D=[];for(var i=0;i<n;i++)D[i]=new Float64Array(n);
+  for(var i=0;i<n;i++)for(var j=i+1;j<n;j++){
     var raw=hav(pts[i],pts[j]);
-    var wi=SEG_CONFIG[pts[i].segment||'pequeño'].weight;
-    var wj=SEG_CONFIG[pts[j].segment||'pequeño'].weight;
+    var wi=SEG_CONFIG[pts[i].segment||'pequeño'].weight,wj=SEG_CONFIG[pts[j].segment||'pequeño'].weight;
     var factor=(i===sIdx||j===sIdx)?1:(1/Math.sqrt(wi*wj));
     D[i][j]=D[j][i]=raw*factor;
   }
   return D;
 }
 function buildDRaw(pts){
-  var n=pts.length, D=[];
-  for(var i=0;i<n;i++) D[i]=new Float64Array(n);
-  for(var i=0;i<n;i++) for(var j=i+1;j<n;j++) D[i][j]=D[j][i]=hav(pts[i],pts[j]);
+  var n=pts.length,D=[];for(var i=0;i<n;i++)D[i]=new Float64Array(n);
+  for(var i=0;i<n;i++)for(var j=i+1;j<n;j++)D[i][j]=D[j][i]=hav(pts[i],pts[j]);
   return D;
 }
-function tourLen(D,t){ var d=0; for(var i=0;i<t.length-1;i++) d+=D[t[i]][t[i+1]]; return d; }
+function tourLen(D,t){var d=0;for(var i=0;i<t.length-1;i++)d+=D[t[i]][t[i+1]];return d;}
+function rotateTour(tour,sIdx){var pos=tour.indexOf(sIdx);if(pos<=0)return tour;return tour.slice(pos).concat(tour.slice(0,pos));}
 
-// ─── ROTAR TOUR ───────────────────────────────────────────────────
-function rotateTour(tour, sIdx){
-  var pos=tour.indexOf(sIdx);
-  if(pos<=0) return tour;
-  return tour.slice(pos).concat(tour.slice(0,pos));
-}
-
-// ─── 2-OPT ────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  2-OPT
+// ══════════════════════════════════════════════════
 function twoOpt(D,tour){
-  var n=tour.length, best=tour.slice(), imp=true, it=0, tmp;
-  while(imp&&it<400){
-    imp=false; it++;
-    for(var i=0;i<n-1;i++) for(var j=i+2;j<n;j++){
-      if(i===0&&j===n-1) continue;
+  var n=tour.length,best=tour.slice(),imp=true,it=0,tmp;
+  while(imp&&it<400){imp=false;it++;
+    for(var i=0;i<n-1;i++)for(var j=i+2;j<n;j++){
+      if(i===0&&j===n-1)continue;
       var gain=D[best[i]][best[i+1]]+D[best[j]][best[(j+1)%n]]-D[best[i]][best[j]]-D[best[i+1]][best[(j+1)%n]];
-      if(gain>1e-9){
-        var lo=i+1,hi=j;
-        while(lo<hi){tmp=best[lo];best[lo]=best[hi];best[hi]=tmp;lo++;hi--;}
-        imp=true;
-      }
+      if(gain>1e-9){var lo=i+1,hi=j;while(lo<hi){tmp=best[lo];best[lo]=best[hi];best[hi]=tmp;lo++;hi--;}imp=true;}
     }
   }
   return best;
 }
 
-// ─── ALGORITMO 1: NN multi-start + 2-opt ─────────────────────────
+// ══════════════════════════════════════════════════
+//  ALGORITMOS
+// ══════════════════════════════════════════════════
 function algoNN2opt(D,sIdx){
-  var n=D.length, bestTour=null, bestLen=Infinity;
-  var starts=[sIdx];
-  for(var k=0;k<n&&starts.length<8;k++) if(k!==sIdx) starts.push(k);
+  var n=D.length,bestTour=null,bestLen=Infinity,starts=[sIdx];
+  for(var k=0;k<n&&starts.length<8;k++)if(k!==sIdx)starts.push(k);
   for(var si=0;si<starts.length;si++){
-    var start=starts[si], visited=new Uint8Array(n), tour=[start]; visited[start]=1;
-    for(var k=1;k<n;k++){
-      var cur=tour[tour.length-1], best=-1, bd=Infinity;
-      for(var j=0;j<n;j++) if(!visited[j]&&D[cur][j]<bd){bd=D[cur][j];best=j;}
-      tour.push(best); visited[best]=1;
-    }
-    var t2=twoOpt(D,tour), t2r=rotateTour(t2,sIdx), len=tourLen(D,t2r);
+    var start=starts[si],visited=new Uint8Array(n),tour=[start];visited[start]=1;
+    for(var k=1;k<n;k++){var cur=tour[tour.length-1],best=-1,bd=Infinity;for(var j=0;j<n;j++)if(!visited[j]&&D[cur][j]<bd){bd=D[cur][j];best=j;}tour.push(best);visited[best]=1;}
+    var t2=twoOpt(D,tour),t2r=rotateTour(t2,sIdx),len=tourLen(D,t2r);
     if(len<bestLen){bestLen=len;bestTour=t2r.slice();}
   }
   return bestTour;
 }
-
-// ─── ALGORITMO 2: Or-opt ─────────────────────────────────────────
 function algoOrOpt(D,sIdx){
-  var tour=algoNN2opt(D,sIdx).slice(), n=tour.length, imp=true, it=0;
-  while(imp&&it<300){
-    imp=false; it++;
+  var tour=algoNN2opt(D,sIdx).slice(),n=tour.length,imp=true,it=0;
+  while(imp&&it<300){imp=false;it++;
     var found=false;
     for(var i=1;i<n-1&&!found;i++){
-      if(tour[i]===sIdx) continue;
-      var node=tour[i];
-      var costR=D[tour[i-1]][node]+D[node][tour[i+1]]-D[tour[i-1]][tour[i+1]];
+      if(tour[i]===sIdx)continue;
+      var node=tour[i],costR=D[tour[i-1]][node]+D[node][tour[i+1]]-D[tour[i-1]][tour[i+1]];
       for(var j=0;j<n-1&&!found;j++){
-        if(j>=i-1&&j<=i+1) continue;
+        if(j>=i-1&&j<=i+1)continue;
         var costI=D[tour[j]][node]+D[node][tour[j+1]]-D[tour[j]][tour[j+1]];
-        if(costI-costR<-1e-9){
-          var nt=[]; for(var k=0;k<tour.length;k++) if(k!==i) nt.push(tour[k]);
-          var ins=j<i?j+1:j; nt.splice(ins,0,node);
-          tour=nt; n=tour.length; imp=true; found=true;
-        }
+        if(costI-costR<-1e-9){var nt=[];for(var k=0;k<tour.length;k++)if(k!==i)nt.push(tour[k]);var ins=j<i?j+1:j;nt.splice(ins,0,node);tour=nt;n=tour.length;imp=true;found=true;}
       }
     }
-    var found2=false;
-    for(var i=1;i<n-2&&!found2;i++){
-      if(tour[i]===sIdx||tour[i+1]===sIdx) continue;
-      var n1=tour[i],n2=tour[i+1];
-      if(i+2>=n) continue;
-      var costR=D[tour[i-1]][n1]+D[n2][tour[i+2]]-D[tour[i-1]][tour[i+2]];
-      for(var j=0;j<n-2&&!found2;j++){
-        if(j>=i-1&&j<=i+2) continue;
-        if(j+1>=n) continue;
-        var costI=D[tour[j]][n1]+D[n2][tour[j+1]]-D[tour[j]][tour[j+1]];
-        if(costI-costR<-1e-9){
-          var nt=[]; for(var k=0;k<tour.length;k++) if(k!==i&&k!==i+1) nt.push(tour[k]);
-          var ins=j<i?j+1:j-1; if(ins<0)ins=0; if(ins>nt.length)ins=nt.length;
-          nt.splice(ins,0,n1,n2); tour=nt; n=tour.length; imp=true; found2=true;
-        }
+    var f2=false;
+    for(var i=1;i<n-2&&!f2;i++){
+      if(tour[i]===sIdx||tour[i+1]===sIdx)continue;
+      var n1=tour[i],n2=tour[i+1];if(i+2>=n)continue;
+      var cR=D[tour[i-1]][n1]+D[n2][tour[i+2]]-D[tour[i-1]][tour[i+2]];
+      for(var j=0;j<n-2&&!f2;j++){
+        if(j>=i-1&&j<=i+2||j+1>=n)continue;
+        var cI=D[tour[j]][n1]+D[n2][tour[j+1]]-D[tour[j]][tour[j+1]];
+        if(cI-cR<-1e-9){var nt=[];for(var k=0;k<tour.length;k++)if(k!==i&&k!==i+1)nt.push(tour[k]);var ins=j<i?j+1:j-1;if(ins<0)ins=0;if(ins>nt.length)ins=nt.length;nt.splice(ins,0,n1,n2);tour=nt;n=tour.length;imp=true;f2=true;}
       }
     }
   }
-  return twoOpt(D, rotateTour(tour,sIdx));
+  return twoOpt(D,rotateTour(tour,sIdx));
 }
-
-// ─── ALGORITMO 3: Clarke-Wright Savings ──────────────────────────
 function algoClarkeWright(D,sIdx){
-  var n=D.length;
-  var dDep=[]; for(var i=0;i<n;i++) dDep.push(D[sIdx][i]);
+  var n=D.length,dDep=[];for(var i=0;i<n;i++)dDep.push(D[sIdx][i]);
   var savings=[];
-  for(var i=0;i<n;i++) for(var j=i+1;j<n;j++){
-    if(i===sIdx||j===sIdx) continue;
-    savings.push({i:i,j:j,s:dDep[i]+dDep[j]-D[i][j]});
-  }
+  for(var i=0;i<n;i++)for(var j=i+1;j<n;j++){if(i===sIdx||j===sIdx)continue;savings.push({i:i,j:j,s:dDep[i]+dDep[j]-D[i][j]});}
   savings.sort(function(a,b){return b.s-a.s;});
-  var routes=[]; for(var i=0;i<n;i++) routes.push(i===sIdx?null:[i]);
-  var routeOf=[]; for(var i=0;i<n;i++) routeOf[i]=i;
+  var routes=[],routeOf=[];for(var i=0;i<n;i++){routes.push(i===sIdx?null:[i]);routeOf[i]=i;}
   function isEnd(r,node){return r&&(r[0]===node||r[r.length-1]===node);}
   for(var s=0;s<savings.length;s++){
-    var si=savings[s].i, sj=savings[s].j;
-    var ri=routeOf[si], rj=routeOf[sj];
-    if(ri===rj) continue;
-    var R1=routes[ri], R2=routes[rj];
-    if(!R1||!R2) continue;
-    if(!isEnd(R1,si)||!isEnd(R2,sj)) continue;
-    if(R1[0]===si) R1.reverse();
-    if(R2[R2.length-1]===sj) R2.reverse();
-    var merged=R1.concat(R2);
-    routes[ri]=merged; routes[rj]=[];
-    merged.forEach(function(node){routeOf[node]=ri;});
+    var si=savings[s].i,sj=savings[s].j,ri=routeOf[si],rj=routeOf[sj];
+    if(ri===rj)continue;var R1=routes[ri],R2=routes[rj];if(!R1||!R2)continue;
+    if(!isEnd(R1,si)||!isEnd(R2,sj))continue;
+    if(R1[0]===si)R1.reverse();if(R2[R2.length-1]===sj)R2.reverse();
+    var merged=R1.concat(R2);routes[ri]=merged;routes[rj]=[];merged.forEach(function(node){routeOf[node]=ri;});
   }
   var best=routes.reduce(function(a,b){if(!b)return a;return b.length>a.length?b:a;},[]);
-  if(best.length<n-1){
-    var inT=new Set(best); inT.add(sIdx);
-    for(var i=0;i<n;i++){
-      if(inT.has(i)) continue;
-      var bp=1,bc=Infinity;
-      for(var j=0;j<best.length-1;j++){
-        var c=D[best[j]][i]+D[i][best[j+1]]-D[best[j]][best[j+1]];
-        if(c<bc){bc=c;bp=j+1;}
-      }
-      best.splice(bp,0,i); inT.add(i);
-    }
-  }
-  var tour=[sIdx].concat(best.filter(function(x){return x!==sIdx;}));
-  return twoOpt(D,tour);
+  if(best.length<n-1){var inT=new Set(best);inT.add(sIdx);for(var i=0;i<n;i++){if(inT.has(i))continue;var bp=1,bc=Infinity;for(var j=0;j<best.length-1;j++){var c=D[best[j]][i]+D[i][best[j+1]]-D[best[j]][best[j+1]];if(c<bc){bc=c;bp=j+1;}}best.splice(bp,0,i);inT.add(i);}}
+  return twoOpt(D,[sIdx].concat(best.filter(function(x){return x!==sIdx;})));
 }
-
-// ─── ALGORITMO 4: Greedy + double-bridge ─────────────────────────
 function algoGreedy3opt(D,sIdx){
-  var n=D.length, edges=[], i, j;
-  for(i=0;i<n;i++) for(j=i+1;j<n;j++) edges.push([D[i][j],i,j]);
+  var n=D.length,edges=[],i,j;
+  for(i=0;i<n;i++)for(j=i+1;j<n;j++)edges.push([D[i][j],i,j]);
   edges.sort(function(a,b){return a[0]-b[0];});
-  var degree=new Int32Array(n), adj=[]; for(i=0;i<n;i++) adj.push([]);
-  var parent=[]; for(i=0;i<n;i++) parent[i]=i;
+  var degree=new Int32Array(n),adj=[];for(i=0;i<n;i++)adj.push([]);
+  var parent=[];for(i=0;i<n;i++)parent[i]=i;
   function find(x){return parent[x]===x?x:parent[x]=find(parent[x]);}
   var ec=0;
-  for(var e=0;e<edges.length&&ec<n;e++){
-    var ei=edges[e][1], ej=edges[e][2];
-    if(degree[ei]>=2||degree[ej]>=2) continue;
-    if(ec<n-1&&find(ei)===find(ej)) continue;
-    adj[ei].push(ej); adj[ej].push(ei); degree[ei]++; degree[ej]++;
-    parent[find(ei)]=find(ej); ec++;
-  }
-  var tour=[sIdx], vis=new Uint8Array(n); vis[sIdx]=1;
-  var current=sIdx;
-  for(var step=0;step<n-1;step++){
-    var next=-1;
-    for(var k=0;k<adj[current].length;k++){if(!vis[adj[current][k]]){next=adj[current][k];break;}}
-    if(next===-1){var bd=Infinity;for(k=0;k<n;k++){if(!vis[k]&&D[current][k]<bd){bd=D[current][k];next=k;}}}
-    if(next===-1) break;
-    tour.push(next); vis[next]=1; current=next;
-  }
-  for(i=0;i<n;i++){
-    if(!vis[i]){
-      var bp=1,bc=Infinity;
-      for(j=0;j<tour.length-1;j++){var c=D[tour[j]][i]+D[i][tour[j+1]]-D[tour[j]][tour[j+1]];if(c<bc){bc=c;bp=j+1;}}
-      tour.splice(bp,0,i); vis[i]=1;
-    }
-  }
-  var best=twoOpt(D,tour), bestLen=tourLen(D,best);
-  for(var att=0;att<20;att++){
-    if(n<5) break;
-    var pool=[]; for(i=1;i<n-1;i++) pool.push(i);
-    for(i=pool.length-1;i>0;i--){var rr=Math.floor(Math.random()*(i+1));var tmp=pool[i];pool[i]=pool[rr];pool[rr]=tmp;}
-    var pts4=pool.slice(0,4).sort(function(a,b){return a-b;});
-    if(pts4.length<4||pts4[0]===0) continue;
-    var a=pts4[0],b=pts4[1],c=pts4[2],d=pts4[3];
-    var cand=best.slice(0,a).concat(best.slice(c,d)).concat(best.slice(b,c)).concat(best.slice(a,b)).concat(best.slice(d));
-    if(cand[0]!==sIdx) cand=rotateTour(cand,sIdx);
-    var imp2=twoOpt(D,cand), len2=tourLen(D,imp2);
-    if(len2<bestLen){bestLen=len2;best=imp2;}
-  }
+  for(var e=0;e<edges.length&&ec<n;e++){var ei=edges[e][1],ej=edges[e][2];if(degree[ei]>=2||degree[ej]>=2)continue;if(ec<n-1&&find(ei)===find(ej))continue;adj[ei].push(ej);adj[ej].push(ei);degree[ei]++;degree[ej]++;parent[find(ei)]=find(ej);ec++;}
+  var tour=[sIdx],vis=new Uint8Array(n);vis[sIdx]=1;var current=sIdx;
+  for(var step=0;step<n-1;step++){var next=-1;for(var k=0;k<adj[current].length;k++){if(!vis[adj[current][k]]){next=adj[current][k];break;}}if(next===-1){var bd=Infinity;for(k=0;k<n;k++){if(!vis[k]&&D[current][k]<bd){bd=D[current][k];next=k;}}}if(next===-1)break;tour.push(next);vis[next]=1;current=next;}
+  for(i=0;i<n;i++){if(!vis[i]){var bp=1,bc=Infinity;for(j=0;j<tour.length-1;j++){var c=D[tour[j]][i]+D[i][tour[j+1]]-D[tour[j]][tour[j+1]];if(c<bc){bc=c;bp=j+1;}}tour.splice(bp,0,i);vis[i]=1;}}
+  var best=twoOpt(D,tour),bestLen=tourLen(D,best);
+  for(var att=0;att<20;att++){if(n<5)break;var pool=[];for(i=1;i<n-1;i++)pool.push(i);for(i=pool.length-1;i>0;i--){var rr=Math.floor(Math.random()*(i+1));var tmp=pool[i];pool[i]=pool[rr];pool[rr]=tmp;}var pts4=pool.slice(0,4).sort(function(a,b){return a-b;});if(pts4.length<4||pts4[0]===0)continue;var a=pts4[0],b=pts4[1],c=pts4[2],d=pts4[3];var cand=best.slice(0,a).concat(best.slice(c,d)).concat(best.slice(b,c)).concat(best.slice(a,b)).concat(best.slice(d));if(cand[0]!==sIdx)cand=rotateTour(cand,sIdx);var imp2=twoOpt(D,cand),len2=tourLen(D,imp2);if(len2<bestLen){bestLen=len2;best=imp2;}}
   return rotateTour(best,sIdx);
 }
 
-// ─── OSRM ────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  OSRM
+// ══════════════════════════════════════════════════
 function fetchOSRM(order){
   var coords=order.map(function(i){return points[i].lon+','+points[i].lat;}).join(';');
-  var url='https://router.project-osrm.org/trip/v1/driving/'+coords+
-          '?roundtrip=false&source=first&destination=last&overview=full&geometries=geojson';
+  var url='https://router.project-osrm.org/trip/v1/driving/'+coords+'?roundtrip=false&source=first&destination=last&overview=full&geometries=geojson';
   return fetch(url,{signal:AbortSignal.timeout(15000)})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-    .then(function(data){if(!data.trips||!data.trips[0])throw new Error('Sin resultado');return data.trips[0];});
+    .then(function(d){if(!d.trips||!d.trips[0])throw new Error('Sin resultado');return d.trips[0];});
 }
 function drawOSRM(geom,color){
   clearLines();
@@ -800,14 +1151,18 @@ function drawDirect(order,color){
   routePolylines.push(L.polyline(ll,{color:color,weight:3,opacity:.6,dashArray:'8 5'}).addTo(map));
 }
 
-// ─── CALCULAR TODOS LOS ALGORITMOS ───────────────────────────────
+// ══════════════════════════════════════════════════
+//  CALCULAR TODOS
+// ══════════════════════════════════════════════════
 function runAll(){
-  if(points.length<2){setStatus('Necesitas al menos 2 puntos.','warn');return;}
-  osrmToken++; // invalida callbacks OSRM pendientes
+  if(points.length<2){toast('Necesitas al menos 2 puntos','warn');return;}
+  osrmToken++;
   setProp('btn-run','disabled',true);
-  setStatus('Construyendo matriz con ponderación de prioridades...','run'); setProgress(3);
+  // Resetear indicadores de algo buttons
+  for(var i=0;i<4;i++){var b=el('ab-'+i);if(b)b.className='algo-btn'+(i===activeAlgo?' selected':'');}
+  setStatus('Construyendo matriz con ponderación de prioridades...','run');setProgress(3);
   sleep(10).then(function(){
-    var D=buildD(points,startIdx), Draw=buildDRaw(points);
+    var D=buildD(points,startIdx),Draw=buildDRaw(points);
     var fns=[algoNN2opt,algoOrOpt,algoClarkeWright,algoGreedy3opt];
     results=[];
     function runOne(idx){
@@ -819,14 +1174,16 @@ function runAll(){
         selectAlgo(bestIdx);
         setProp('btn-run','disabled',false);
         setProp('btn-export','disabled',false);
-        setProgress(100); setTimeout(function(){setProgress(0);},800);
+        setProgress(100);setTimeout(function(){setProgress(0);},800);
         return;
       }
+      var b=el('ab-'+idx);if(b)b.className='algo-btn running'+(idx===activeAlgo?' selected':'');
       setStatus('Calculando '+(idx+1)+'/4: '+NAMES[idx]+'...','run');
       setProgress(8+idx*18);
       sleep(20).then(function(){
-        var tour=fns[idx](D,startIdx);
-        results.push({tour:tour, dist:tourLen(D,tour), rawDist:tourLen(Draw,tour)});
+        var tour=fns[idx](D,startIdx),raw=tourLen(Draw,tour);
+        results.push({tour:tour,dist:tourLen(D,tour),rawDist:raw});
+        var b2=el('ab-'+idx);if(b2)b2.className='algo-btn'+(idx===activeAlgo?' selected':'');
         runOne(idx+1);
       });
     }
@@ -834,84 +1191,67 @@ function runAll(){
   });
 }
 
-// ─── SELECCIONAR ALGORITMO ────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  SELECCIONAR ALGORITMO
+// ══════════════════════════════════════════════════
 function selectAlgo(idx){
-  if(!results[idx]) return;
+  if(!results[idx])return;
   activeAlgo=idx;
-  for(var i=0;i<4;i++){
-    var b=el('ab-'+i);
-    if(b) b.className='algo-btn'+(i===idx?' selected':'')+(results[i]&&results[i].isBest?' best':'');
-  }
-  var r=results[idx], color=COLORS[idx];
+  for(var i=0;i<4;i++){var b=el('ab-'+i);if(b)b.className='algo-btn'+(i===idx?' selected':'')+(results[i]&&results[i].isBest?' best':'');}
+  var r=results[idx],color=COLORS[idx];
   renderMarkers(r.tour,idx,startIdx);
   renderList(r.tour);
-
   setStyle('stats','display','grid');
-  setText('sv-d',   r.rawDist.toFixed(1)+' km*');
-  setText('sv-s',   String(r.tour.length));
+  setText('sv-d',r.rawDist.toFixed(1)+' km*');
+  setText('sv-s',String(r.tour.length));
   setText('sv-drive','—');
   setText('sv-total','—');
   setText('sv-schedule','Obteniendo ruta real...');
-  setText('sv-a',   NAMES[idx]+(r.isBest?' ✓ mejor':''));
+  setText('sv-a',NAMES[idx]+(r.isBest?' ✓ mejor':''));
   setStatus('Trazando "'+NAMES[idx]+'" por calles reales (OSRM)...','run');
-
-  // Capturar token actual — si el usuario cambia de algoritmo antes de que OSRM responda,
-  // el callback anterior no sobreescribe los elementos del DOM
-  var myToken = ++osrmToken;
-
+  var myToken=++osrmToken;
   fetchOSRM(r.tour).then(function(trip){
-    if(myToken!==osrmToken) return; // respuesta obsoleta, ignorar
+    if(myToken!==osrmToken)return;
     drawOSRM(trip.geometry,color);
-    var km=(trip.distance/1000).toFixed(1);
-    var driveMin=Math.round(trip.duration/60);
-    var visitNode=el('visit-time'), startNode=el('start-time');
-    var vm=visitNode?parseInt(visitNode.value)||20:20;
-    var startT=startNode?startNode.value||'08:00':'08:00';
+    var km=(trip.distance/1000).toFixed(1),driveMin=Math.round(trip.duration/60);
+    var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
+    var startT=(el('start-time')||{value:'08:00'}).value||'08:00';
     var totalMin=driveMin+r.tour.length*vm;
-    var endT=addMinToTime(startT,totalMin);
-    setText('sv-d',   km+' km');
+    setText('sv-d',km+' km');
     setText('sv-drive',fmtMin(driveMin));
     setText('sv-total',fmtMin(totalMin));
-    setText('sv-schedule','Salida: '+startT+' → Llegada est: '+endT+
-            ' ('+r.tour.length+' × '+vm+'min visita + '+fmtMin(driveMin)+' conducción)');
-    setStatus('"'+NAMES[idx]+'": '+km+' km · '+fmtMin(driveMin)+' conducción · '+fmtMin(totalMin)+' total'+(r.isBest?' ← mejor ruta':''),'ok');
-    var cpPanel=el('compare-panel');
-    if(cpPanel&&cpPanel.style.display==='block'){
-      var bestIdx=results.reduce(function(bi,rv,i){return rv.rawDist<results[bi].rawDist?i:bi;},0);
-      updateCompare(bestIdx);
-    }
+    setText('sv-schedule','Salida: '+startT+' → '+addMinToTime(startT,totalMin)+' ('+r.tour.length+'×'+vm+'min + '+fmtMin(driveMin)+' cond.)');
+    setStatus('"'+NAMES[idx]+'": '+km+' km · '+fmtMin(totalMin)+' total'+(r.isBest?' ← mejor':''),'ok');
+    toast(NAMES[idx]+': '+km+' km · '+fmtMin(totalMin)+(r.isBest?' ✓ mejor':''),'ok');
+    var cp=el('compare-panel');if(cp&&cp.style.display==='block'){var bi=results.reduce(function(bi,rv,i){return rv.rawDist<results[bi].rawDist?i:bi;},0);updateCompare(bi);}
   }).catch(function(){
-    if(myToken!==osrmToken) return;
+    if(myToken!==osrmToken)return;
     drawDirect(r.tour,color);
-    var visitNode=el('visit-time'), startNode=el('start-time');
-    var vm=visitNode?parseInt(visitNode.value)||20:20;
-    var startT=startNode?startNode.value||'08:00':'08:00';
-    var driveEst=Math.round(r.rawDist*3);
-    var totalMin=driveEst+r.tour.length*vm;
-    var endT=addMinToTime(startT,totalMin);
+    var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
+    var startT=(el('start-time')||{value:'08:00'}).value||'08:00';
+    var driveEst=Math.round(r.rawDist*3),totalMin=driveEst+r.tour.length*vm;
     setText('sv-drive','~'+fmtMin(driveEst)+'*');
     setText('sv-total','~'+fmtMin(totalMin)+'*');
-    setText('sv-schedule','Salida: '+startT+' → est. '+endT+' (* sin OSRM)');
-    setStatus('OSRM no disponible. "'+NAMES[idx]+'": ~'+r.rawDist.toFixed(1)+' km · ~'+fmtMin(totalMin)+' total','warn');
+    setText('sv-schedule','Salida: '+startT+' → est. '+addMinToTime(startT,totalMin)+' (* sin OSRM)');
+    setStatus('OSRM no disponible. "'+NAMES[idx]+'": ~'+r.rawDist.toFixed(1)+' km','warn');
+    toast('OSRM no disponible, ruta aproximada','warn');
   });
-
-  document.querySelectorAll('.cp-row').forEach(function(node,i){
-    node.classList.toggle('cp-active',i===idx);
-  });
+  document.querySelectorAll('.cp-row').forEach(function(node,i){node.classList.toggle('cp-active',i===idx);});
 }
 
-// ─── PANEL COMPARACIÓN ────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  PANEL COMPARACIÓN
+// ══════════════════════════════════════════════════
 function updateCompare(bestIdx){
   setStyle('compare-panel','display','block');
-  var rows=el('cp-rows'); if(!rows) return;
+  var rows=el('cp-rows');if(!rows)return;
   rows.innerHTML='';
   results.forEach(function(r,i){
-    if(!r) return;
+    if(!r)return;
     var div=document.createElement('div');
     div.className='cp-row'+(i===activeAlgo?' cp-active':'');
     var diff=r.isBest?'':'+'+((r.rawDist-results[bestIdx].rawDist)/results[bestIdx].rawDist*100).toFixed(1)+'%';
-    div.innerHTML=
-      '<div class="cp-dot" style="background:'+COLORS[i]+'"></div>'+
+    div.innerHTML='<div class="cp-dot" style="background:'+COLORS[i]+'"></div>'+
       '<span class="cp-name">'+NAMES[i]+'</span>'+
       '<span class="cp-dist">'+r.rawDist.toFixed(1)+' km</span>'+
       (r.isBest?'<span class="cp-badge">mejor</span>':'<span style="font-size:10px;color:#4a5a70">'+diff+'</span>');
@@ -920,24 +1260,26 @@ function updateCompare(bestIdx){
   });
 }
 
-// ─── LISTA LATERAL ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  LISTA LATERAL
+// ══════════════════════════════════════════════════
 function renderList(order){
-  var list=el('route-list');
-  if(!list) return;
+  var list=el('route-list');if(!list)return;
   if(!points.length){list.innerHTML='<div class="empty">Ningún punto cargado</div>';return;}
   list.innerHTML='';
-  var visitNode=el('visit-time'), startNode=el('start-time');
-  var vm=visitNode?parseInt(visitNode.value)||20:20;
-  var startT=startNode?startNode.value||'08:00':'08:00';
+  var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
+  var startT=(el('start-time')||{value:'08:00'}).value||'08:00';
   var accMin=0;
   order.forEach(function(idx,pos){
-    var p=points[idx]; if(!p) return;
+    var p=points[idx];if(!p)return;
     var isStart=(idx===startIdx);
     var sc=SEG_CONFIG[p.segment||'pequeño'];
     var color=isStart?'#22aa55':sc.color;
-    var eta=addMinToTime(startT,accMin);
     var div=document.createElement('div');
     div.className='ri'+(isStart?' start-point':'');
+    div.setAttribute('data-idx',idx);
+    div.setAttribute('data-seg',p.segment||'pequeño');
+    if(activeSegFilter&&(p.segment||'pequeño')!==activeSegFilter&&!isStart)div.classList.add('filtered-out');
     div.innerHTML=
       '<div class="rn" style="background:'+color+'">'+(pos+1)+'</div>'+
       '<div class="ri-body">'+
@@ -945,20 +1287,17 @@ function renderList(order){
         (p.address?'<div class="raddr">'+p.address+'</div>':'')+
         '<div class="ri-meta">'+
           '<span class="seg-badge" style="background:'+sc.color+'22;color:'+sc.color+'">'+sc.label+'</span>'+
-          '<span class="time-badge">~'+eta+'</span>'+
+          '<span class="time-badge">~'+addMinToTime(startT,accMin)+'</span>'+
         '</div>'+
       '</div>'+
       '<div class="ri-actions">'+
-        (!isStart
-          ? '<button class="ri-btn" onclick="setStartFromList('+idx+',event)">→ Inicio</button>'
-          : '<span style="font-size:9px;color:#22aa55;padding-top:2px">INICIO</span>'
-        )+
+        (!isStart?'<button class="ri-btn" onclick="setStartFromList('+idx+',event)">→ Inicio</button>':'<span style="font-size:9px;color:#22aa55">INICIO</span>')+
       '</div>';
     div.onclick=(function(pidx,ii,d){return function(e){
-      if(e.target.tagName==='BUTTON') return;
+      if(e.target.tagName==='BUTTON')return;
       map.setView([points[pidx].lat,points[pidx].lon],16);
-      if(markersLayer[ii]) markersLayer[ii].openPopup();
-      document.querySelectorAll('.ri').forEach(function(node){node.classList.remove('active');});
+      if(markersLayer[ii])markersLayer[ii].openPopup();
+      document.querySelectorAll('.ri').forEach(function(n){n.classList.remove('active');});
       d.classList.add('active');
     };})(idx,pos,div);
     list.appendChild(div);
@@ -966,19 +1305,19 @@ function renderList(order){
   });
 }
 
-// ─── EXPORTAR ────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  EXPORTAR
+// ══════════════════════════════════════════════════
 function exportRoute(){
-  if(!results[activeAlgo]||!points.length) return;
+  if(!results[activeAlgo]||!points.length)return;
   var order=results[activeAlgo].tour;
-  var visitNode=el('visit-time'), startNode=el('start-time');
-  var vm=visitNode?parseInt(visitNode.value)||20:20;
-  var startT=startNode?startNode.value||'08:00':'08:00';
-  var rows=[['Orden','Nombre','Dirección','Segmento','Lat','Lon','ETA estimado','Visita (min)','Algoritmo']];
+  var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
+  var startT=(el('start-time')||{value:'08:00'}).value||'08:00';
+  var rows=[['Orden','Nombre','Dirección','Segmento','Lat','Lon','ETA estimado','Visita(min)','Algoritmo']];
   var accMin=0;
   order.forEach(function(idx,pos){
-    var p=points[idx]; if(!p) return;
-    var sc=SEG_CONFIG[p.segment||'pequeño'];
-    rows.push([pos+1,p.name,p.address,sc.label,p.lat,p.lon,addMinToTime(startT,accMin),vm,NAMES[activeAlgo]]);
+    var p=points[idx];if(!p)return;
+    rows.push([pos+1,p.name,p.address,SEG_CONFIG[p.segment||'pequeño'].label,p.lat,p.lon,addMinToTime(startT,accMin),vm,NAMES[activeAlgo]]);
     accMin+=vm;
   });
   var ws=XLSX.utils.aoa_to_sheet(rows);
@@ -986,37 +1325,40 @@ function exportRoute(){
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Ruta');
   if(results.every(function(r){return r;})){
-    var cmp=[['Algoritmo','Distancia (km)','Mejor']];
+    var cmp=[['Algoritmo','Distancia(km)','Mejor']];
     results.forEach(function(r,i){if(r)cmp.push([NAMES[i],r.rawDist.toFixed(2),r.isBest?'SÍ':'']);});
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cmp),'Comparativa');
   }
   XLSX.writeFile(wb,'ruta_lima_'+NAMES[activeAlgo].replace(/\s+/g,'_')+'.xlsx');
-  setStatus('Exportado: ruta con ETA por cliente + hoja comparativa.','ok');
+  toast('Exportado: ruta + comparativa','ok');
+  setStatus('Exportado con ETA por cliente y comparativa de algoritmos.','ok');
 }
 
-// ─── LIMPIAR ─────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════
+//  LIMPIAR
+// ══════════════════════════════════════════════════
 function clearAll(rs){
-  osrmToken++; // cancela callbacks OSRM pendientes
-  points=[]; results=[null,null,null,null]; activeAlgo=0; startIdx=0;
-  markersLayer.forEach(function(m){map.removeLayer(m);}); markersLayer=[];
+  osrmToken++;
+  points=[];results=[null,null,null,null];activeAlgo=0;startIdx=0;activeSegFilter=null;
+  markersLayer.forEach(function(m){map.removeLayer(m);});markersLayer=[];
   clearLines();
   setHtml('route-list','<div class="empty">Ningún punto cargado</div>');
   setStyle('stats','display','none');
   setStyle('compare-panel','display','none');
+  setStyle('search-box','display','none');
   setProp('btn-run','disabled',true);
   setProp('btn-clear','disabled',true);
   setProp('btn-export','disabled',true);
   setProp('btn-seg','disabled',true);
   setText('pcnt','0 pts');
-  setHtml('start-select','<option value="-1">— Seleccionar cliente —</option>');
-  setText('start-info','Sin punto de inicio. Haz clic en un marcador o selecciona arriba.');
-  var si=el('start-info'); if(si) si.className='start-info';
-  setText('time-info','Configura y calcula para ver el horario completo.');
-  for(var i=0;i<4;i++){
-    var b=el('ab-'+i);
-    if(b) b.className='algo-btn'+(i===0?' selected':'');
-  }
-  if(rs!==false) setStatus('Listo.','idle');
+  setHtml('start-select','<option value="-1">— Seleccionar —</option>');
+  setText('start-info','Sin punto de inicio. Selecciona arriba o haz clic en un marcador.');
+  var si=el('start-info');if(si)si.className='start-info';
+  setText('time-info','Configura y calcula para ver el horario.');
+  setHtml('seg-counts','');
+  for(var i=0;i<4;i++){var b=el('ab-'+i);if(b)b.className='algo-btn'+(i===0?' selected':'');}
+  var si2=el('search-input');if(si2)si2.value='';
+  if(rs!==false){setStatus('Listo. Sube un Excel o arrastra el archivo.','idle');toast('Todo limpio','ok',1500);}
 }
 </script>
 </body>
