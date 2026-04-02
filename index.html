@@ -6,26 +6,16 @@
 <title>Rutas Comerciales · Lima</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-/* ══════════════════════════════════════════════════
-   RESET & BASE
-══════════════════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121e;color:#dde4f0;display:flex;flex-direction:column;font-size:13px;position:relative}
 
-/* ══════════════════════════════════════════════════
-   HEADER
-══════════════════════════════════════════════════ */
 #header{padding:8px 14px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:10}
 #header-logo{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
 #header h1{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tag{background:#162040;color:#4a90d9;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;white-space:nowrap}
-/* Botón hamburguesa (solo móvil) */
 #menu-toggle{display:none;background:none;border:1px solid #263050;border-radius:5px;color:#8aacd0;padding:5px 8px;cursor:pointer;font-size:16px;flex-shrink:0}
 
-/* ══════════════════════════════════════════════════
-   TOOLBAR
-══════════════════════════════════════════════════ */
 #toolbar{padding:6px 12px;background:#0a0a16;border-bottom:1px solid #1e2540;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;transition:max-height .25s,padding .25s}
 #toolbar.collapsed{max-height:0;padding:0;overflow:hidden}
 .btn{font-size:11px;padding:5px 10px;border:1px solid #263050;border-radius:5px;background:#131826;color:#b0c4de;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;user-select:none}
@@ -36,65 +26,43 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#12121e;color:#dde4f
 .btn.go:hover:not(:disabled){background:#1e55b5}
 .btn.exp{background:#1a4a2a;color:#6dffaa;border-color:#2a7a44}
 .btn.exp:hover:not(:disabled){background:#1e5a32}
-/* Drop zone upload */
+.btn.gps{background:#1a3a5a;color:#55ccff;border-color:#2a6a9a}
+.btn.gps:hover:not(:disabled){background:#1e4a70}
+.btn.gps.active{background:#0d4a6a;color:#00eeff;border-color:#00aabb;animation:gpspulse 1.5s infinite}
+@keyframes gpspulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,255,.4)}50%{box-shadow:0 0 0 6px rgba(0,200,255,0)}}
 #upload-zone{border:1px dashed #263a60;border-radius:5px;padding:5px 10px;font-size:11px;color:#5a80aa;cursor:pointer;background:#0d1220;transition:all .15s;white-space:nowrap}
 #upload-zone:hover,#upload-zone.dragover{border-color:#4a90d9;color:#6aaeff;background:#0d1830}
 #file-input{display:none}
 .sep{width:1px;height:18px;background:#1e2540;flex-shrink:0}
 
-/* ══════════════════════════════════════════════════
-   ALGO BAR
-══════════════════════════════════════════════════ */
 #algo-bar{padding:5px 12px;background:#0d1020;border-bottom:1px solid #1a2035;display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
 .algo-btn{font-size:11px;padding:3px 9px;border:1px solid #263050;border-radius:12px;background:#131826;color:#7a94b8;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;user-select:none}
 .algo-btn:hover{background:#1a2540;color:#aac4e0}
 .algo-btn.selected{background:#1a3a7a;color:#6aaeff;border-color:#2a5acc;font-weight:600}
 .algo-btn.best{border-color:#2a7a44!important;color:#5aff8a!important}
 .algo-btn.running::after{content:' ⏳';font-size:9px}
-.algo-btn.done-best::after{content:' ✓';font-size:9px;color:#5aff8a}
 .algo-label{font-size:10px;color:#3a5070;margin-right:2px;white-space:nowrap}
 
-/* ══════════════════════════════════════════════════
-   PROGRESS / STATUS
-══════════════════════════════════════════════════ */
 #progress{height:2px;background:#0d1020;flex-shrink:0}
 #progress-bar{height:100%;background:linear-gradient(90deg,#2a7aff,#ff6b35);width:0%;transition:width .3s}
 #status-bar{padding:4px 14px;background:#090910;border-bottom:1px solid #141820;font-size:11px;color:#4a6a88;display:flex;align-items:center;gap:7px;flex-shrink:0;min-height:24px}
 .dot{width:6px;height:6px;border-radius:50%;background:#2a3a50;flex-shrink:0}
-.dot.ok{background:#22aa55}.dot.run{background:#ffaa22;animation:blink .7s infinite}.dot.warn{background:#ff6022}
+.dot.ok{background:#22aa55}.dot.run{background:#ffaa22;animation:blink .7s infinite}.dot.warn{background:#ff6022}.dot.gps{background:#00ccff;animation:blink .7s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
 
-/* ══════════════════════════════════════════════════
-   MAIN LAYOUT (desktop)
-══════════════════════════════════════════════════ */
 #main{display:flex;flex:1;overflow:hidden;min-height:0;position:relative}
 #map{flex:1;z-index:1}
 
-/* ══════════════════════════════════════════════════
-   SIDEBAR (desktop)
-══════════════════════════════════════════════════ */
 #sidebar{width:285px;background:#0a0a16;border-left:1px solid #141820;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .2s,transform .2s;position:relative;z-index:5}
 #sidebar.collapsed{width:0;border-left:none}
-/* Toggle sidebar button (desktop) */
 #sidebar-toggle{position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:14px;height:48px;background:#1a2540;border:1px solid #1e3050;border-right:none;border-radius:5px 0 0 5px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#5a80aa;font-size:10px;z-index:6;transition:background .15s}
 #sidebar-toggle:hover{background:#1e3060;color:#aac4e0}
 #sidebar-inner{display:flex;flex-direction:column;overflow:hidden;flex:1;min-width:285px}
 
-/* ══════════════════════════════════════════════════
-   SIDEBAR HEADER
-══════════════════════════════════════════════════ */
 #sb-header{padding:8px 12px;border-bottom:1px solid #141820;display:flex;align-items:center;gap:6px;flex-shrink:0}
 #sb-header .title{font-size:12px;font-weight:600;color:#aabfd8;flex:1}
 .cnt{background:#162040;color:#4a90d9;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600}
-/* Filtro de búsqueda */
-#search-box{padding:5px 11px;border-bottom:1px solid #141820;flex-shrink:0;display:none}
-#search-input{width:100%;font-size:11px;padding:5px 8px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit}
-#search-input:focus{outline:none;border-color:#2a5acc}
-#search-input::placeholder{color:#3a5a70}
 
-/* ══════════════════════════════════════════════════
-   CONFIG PANEL
-══════════════════════════════════════════════════ */
 #config-panel{padding:8px 11px;border-bottom:1px solid #141820;flex-shrink:0}
 .cfg-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
 .cfg-title .arrow{font-size:8px;transition:transform .2s;margin-left:auto}
@@ -108,11 +76,23 @@ select:focus{outline:none;border-color:#2a5acc}
 .time-input{font-size:11px;padding:3px 6px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;flex:1}
 .start-info{font-size:10px;color:#4a6a44;background:#0d1e10;border:1px solid #1a3a1a;border-radius:4px;padding:4px 8px;margin-top:2px;line-height:1.5}
 .start-info.active{color:#6aff8a;border-color:#2a6a2a}
+.start-info.gps-active{color:#55ccff;border-color:#1a5a7a;background:#0a1e2a}
 .tip{font-size:10px;color:#3a5a70;font-style:italic;margin-top:2px}
 
-/* ══════════════════════════════════════════════════
-   SEGMENT LEGEND
-══════════════════════════════════════════════════ */
+/* Add point panel */
+#add-point-panel{padding:8px 11px;border-bottom:1px solid #141820;flex-shrink:0;display:none}
+.add-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+.add-title .arrow{font-size:8px;transition:transform .2s;margin-left:auto}
+.add-body{overflow:hidden;transition:max-height .2s}
+.add-body.collapsed{max-height:0!important}
+.add-row{display:flex;gap:5px;margin-bottom:5px}
+.add-input{font-size:11px;padding:4px 7px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;flex:1;min-width:0}
+.add-input:focus{outline:none;border-color:#2a5acc}
+.add-hint{font-size:10px;color:#3a5a70;margin-top:2px;line-height:1.5}
+.add-coord-row{display:flex;gap:5px;margin-bottom:5px}
+#map-click-mode{display:none;font-size:10px;color:#ffaa44;background:#2a1a08;border:1px solid #5a3a18;border-radius:4px;padding:4px 8px;margin-top:3px;line-height:1.5}
+#map-click-mode.active{display:block}
+
 #priority-legend{padding:6px 11px;border-bottom:1px solid #141820;flex-shrink:0}
 .pleg-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
 .pleg-title .arrow{font-size:8px;transition:transform .2s;margin-left:auto}
@@ -121,15 +101,19 @@ select:focus{outline:none;border-color:#2a5acc}
 .pleg-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;font-size:11px;color:#8aacc0}
 .pleg-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.3)}
 .pleg-weight{margin-left:auto;font-size:10px;color:#4a6a80}
-/* Contadores por segmento */
 #seg-counts{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap}
 .seg-count{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;cursor:pointer;transition:opacity .15s}
 .seg-count:hover{opacity:.75}
 .seg-count.dimmed{opacity:.35}
 
-/* ══════════════════════════════════════════════════
-   STATS
-══════════════════════════════════════════════════ */
+/* Tile switcher */
+#tile-switcher{padding:6px 11px;border-bottom:1px solid #141820;flex-shrink:0}
+.tile-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.tile-options{display:flex;gap:5px;flex-wrap:wrap}
+.tile-btn{font-size:10px;padding:3px 9px;border:1px solid #263050;border-radius:10px;background:#131826;color:#7a94b8;cursor:pointer;font-family:inherit;transition:all .15s;user-select:none}
+.tile-btn:hover{background:#1a2540;color:#aac4e0}
+.tile-btn.active{background:#1a2a50;color:#6aaeff;border-color:#2a5acc;font-weight:600}
+
 #stats{padding:7px 11px;border-bottom:1px solid #141820;display:none;grid-template-columns:1fr 1fr 1fr;gap:5px}
 .sc{background:#0d1626;border:1px solid #1a2a40;border-radius:5px;padding:5px 8px}
 .sc-l{font-size:9px;color:#3a5a78;margin-bottom:2px}
@@ -138,9 +122,6 @@ select:focus{outline:none;border-color:#2a5acc}
 .sc-v.big{font-size:17px;color:#6aff8a}
 .sc-full{grid-column:1/-1}
 
-/* ══════════════════════════════════════════════════
-   COMPARE PANEL
-══════════════════════════════════════════════════ */
 #compare-panel{padding:6px 11px;border-bottom:1px solid #141820;display:none;flex-shrink:0}
 .cp-title{font-size:10px;color:#3a5a78;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
 .cp-row{display:flex;align-items:center;gap:5px;padding:3px 4px;border-bottom:1px solid #0e1622;cursor:pointer;transition:background .1s;border-radius:3px}
@@ -151,17 +132,34 @@ select:focus{outline:none;border-color:#2a5acc}
 .cp-dist{font-size:11px;color:#5a8ab0;min-width:50px;text-align:right}
 .cp-badge{font-size:9px;padding:1px 5px;border-radius:6px;background:#1a3a1a;color:#5aff8a;font-weight:600}
 
-/* ══════════════════════════════════════════════════
-   ROUTE LIST
-══════════════════════════════════════════════════ */
-#route-list{flex:1;overflow-y:auto;padding:3px 0}
-#route-list::-webkit-scrollbar{width:3px}
+/* Search bar */
+#search-wrap{padding:5px 10px;border-bottom:1px solid #141820;flex-shrink:0;display:none}
+#search-input{width:100%;font-size:11px;padding:5px 8px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit}
+#search-input:focus{outline:none;border-color:#2a5acc}
+#search-input::placeholder{color:#3a5a70}
+
+/* Route list — SCROLLABLE */
+#route-list{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:3px 0;
+  min-height:0;
+  scrollbar-width:thin;
+  scrollbar-color:#1e2a40 #0a0a16;
+}
+#route-list::-webkit-scrollbar{width:5px}
 #route-list::-webkit-scrollbar-track{background:#0a0a16}
-#route-list::-webkit-scrollbar-thumb{background:#1e2a40;border-radius:2px}
+#route-list::-webkit-scrollbar-thumb{background:#1e2a40;border-radius:3px}
+#route-list::-webkit-scrollbar-thumb:hover{background:#2a3a55}
+
 .ri{padding:6px 10px;border-bottom:1px solid #0e121e;cursor:pointer;display:flex;align-items:flex-start;gap:6px;transition:background .1s}
 .ri:hover{background:#0e1626}
 .ri.active{background:#0d1e3a}
 .ri.start-point{background:#0a1e0a;border-left:2px solid #22aa55}
+.ri.gps-start{background:#061e2a;border-left:2px solid #00ccff}
+.ri.visited{opacity:.4;background:#0a0a12}
+.ri.visited .rname{text-decoration:line-through;color:#4a5a70}
 .ri.filtered-out{display:none}
 .rn{width:21px;height:21px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .ri-body{flex:1;min-width:0}
@@ -170,28 +168,28 @@ select:focus{outline:none;border-color:#2a5acc}
 .ri-meta{display:flex;align-items:center;gap:4px;margin-top:2px}
 .seg-badge{font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
 .time-badge{font-size:9px;color:#4a6a78;margin-left:auto}
-.ri-actions{display:flex;gap:3px;margin-left:3px;flex-shrink:0;align-items:flex-start;padding-top:1px}
-.ri-btn{font-size:9px;padding:2px 4px;border:1px solid #1a3a1a;border-radius:3px;background:#0d1e0d;color:#4a8a4a;cursor:pointer;transition:all .1s;user-select:none}
+.ri-actions{display:flex;gap:3px;margin-left:3px;flex-shrink:0;align-items:flex-start;padding-top:1px;flex-direction:column}
+.ri-btn{font-size:9px;padding:2px 4px;border:1px solid #1a3a1a;border-radius:3px;background:#0d1e0d;color:#4a8a4a;cursor:pointer;transition:all .1s;user-select:none;white-space:nowrap}
 .ri-btn:hover{background:#0d2a0d;color:#6aaa6a}
+.ri-btn.del{border-color:#3a1a1a;background:#1e0d0d;color:#aa4a4a}
+.ri-btn.del:hover{background:#2a0d0d;color:#dd6a6a}
+.ri-btn.visited-btn{border-color:#2a3a1a;background:#1a2a0d;color:#7aaa4a}
+.ri-btn.visited-btn:hover{background:#2a3a0d;color:#9acc6a}
 .empty{padding:28px 14px;text-align:center;color:#2a3a50;font-size:12px}
 
-/* ══════════════════════════════════════════════════
-   FOOTER INFO
-══════════════════════════════════════════════════ */
+/* GPS dot on map */
+.gps-marker-inner{width:16px;height:16px;border-radius:50%;background:#00ccff;border:3px solid #fff;box-shadow:0 0 0 4px rgba(0,200,255,.3)}
+.gps-pulse{animation:gps-ring 1.8s ease-out infinite}
+@keyframes gps-ring{0%{box-shadow:0 0 0 0 rgba(0,200,255,.5)}70%{box-shadow:0 0 0 14px rgba(0,200,255,0)}100%{box-shadow:0 0 0 0 rgba(0,200,255,0)}}
+
 #algo-desc{padding:6px 12px;border-top:1px solid #141820;font-size:10px;color:#3a5a78;line-height:1.6;flex-shrink:0}
 #algo-desc strong{color:#5a80aa}
 
-/* ══════════════════════════════════════════════════
-   MAP CONTROLS (QoL buttons sobre el mapa)
-══════════════════════════════════════════════════ */
 #map-controls{position:absolute;top:10px;right:10px;z-index:400;display:flex;flex-direction:column;gap:5px}
 .map-btn{width:30px;height:30px;background:#0d1626;border:1px solid #1e3050;border-radius:5px;color:#8aacd0;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
 .map-btn:hover{background:#1a2a40;color:#aac4e0}
 .map-btn.active{background:#1a3a7a;color:#6aaeff;border-color:#2a5acc}
 
-/* ══════════════════════════════════════════════════
-   TOAST NOTIFICATIONS
-══════════════════════════════════════════════════ */
 #toast-container{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99998;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 .toast{background:#0d1e36;border:1px solid #1e3a60;color:#aac8e8;font-size:12px;padding:8px 16px;border-radius:8px;pointer-events:none;opacity:0;transform:translateY(10px);transition:all .25s;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -199,9 +197,6 @@ select:focus{outline:none;border-color:#2a5acc}
 .toast.warn{border-color:#6a3a1a;color:#ffaa55}
 .toast.err{border-color:#6a1a1a;color:#ff7a7a}
 
-/* ══════════════════════════════════════════════════
-   MODAL
-══════════════════════════════════════════════════ */
 #seg-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px}
 #seg-modal.open{display:flex}
 .modal-box{background:#0d1626;border:1px solid #1e3a60;border-radius:10px;padding:18px;width:100%;max-width:380px;max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;gap:0}
@@ -209,7 +204,6 @@ select:focus{outline:none;border-color:#2a5acc}
 .modal-box::-webkit-scrollbar-thumb{background:#1e2a40}
 .modal-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px}
 .modal-sub{font-size:11px;color:#5a7a98;margin-bottom:10px}
-/* Search dentro del modal */
 #modal-search{width:100%;font-size:11px;padding:5px 8px;background:#0a0e18;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;margin-bottom:8px}
 #modal-search:focus{outline:none;border-color:#2a5acc}
 .modal-bulk{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
@@ -223,9 +217,12 @@ select:focus{outline:none;border-color:#2a5acc}
 .seg-select{font-size:11px;padding:3px 5px;background:#0d1220;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit;cursor:pointer}
 .modal-footer{margin-top:10px;display:flex;gap:7px;justify-content:flex-end}
 
-/* ══════════════════════════════════════════════════
-   LEAFLET CUSTOM
-══════════════════════════════════════════════════ */
+#drag-overlay{position:fixed;inset:0;background:rgba(10,20,50,.85);z-index:99997;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#6aaeff;font-size:16px;font-weight:600;border:3px dashed #2a5acc;pointer-events:none}
+#drag-overlay.show{display:flex}
+
+/* Visited counter badge */
+#visited-badge{display:none;font-size:10px;padding:2px 7px;border-radius:8px;background:#1a2a0d;color:#7acc44;border:1px solid #2a4a1a;margin-left:4px}
+
 .leaflet-popup-content-wrapper{background:#0d1626;border:1px solid #1e3a60;color:#b0cce8;border-radius:7px}
 .leaflet-popup-tip{background:#0d1626}
 .leaflet-popup-content{font-family:'Segoe UI',sans-serif;font-size:12px;margin:9px 12px}
@@ -233,92 +230,34 @@ select:focus{outline:none;border-color:#2a5acc}
 .leaflet-control-zoom a{background:#0d1220!important;border-color:#1e2a40!important;color:#6a8aae!important}
 .leaflet-control-zoom a:hover{background:#141e30!important}
 .leaflet-control-attribution{background:rgba(8,10,20,.8)!important;color:#3a5070!important;font-size:10px!important}
-.leaflet-control-attribution a{color:#3a6090!important}
 
-/* ══════════════════════════════════════════════════
-   RESPONSIVE — TABLET (≤900px)
-══════════════════════════════════════════════════ */
-@media(max-width:900px){
-  #sidebar{width:260px}
-  #sidebar-inner{min-width:260px}
-}
-
-/* ══════════════════════════════════════════════════
-   RESPONSIVE — MÓVIL (≤640px)
-══════════════════════════════════════════════════ */
+@media(max-width:900px){#sidebar{width:260px}#sidebar-inner{min-width:260px}}
 @media(max-width:640px){
-  /* Header compacto */
   #header h1{font-size:12px}
-  .sub{display:none}
-  .tag{display:none}
+  .sub{display:none}.tag{display:none}
   #menu-toggle{display:flex;align-items:center;justify-content:center}
-
-  /* Toolbar colapsable */
   #toolbar{max-height:200px;overflow:hidden}
-
-  /* Algo bar scroll horizontal */
   #algo-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
   #algo-bar::-webkit-scrollbar{display:none}
-
-  /* Main: mapa arriba, sidebar como panel deslizable abajo */
   #main{flex-direction:column}
   #map{flex:1;min-height:0}
-
-  /* Sidebar: panel bottom sheet */
-  #sidebar{
-    width:100%!important;
-    border-left:none;
-    border-top:1px solid #1e2540;
-    height:var(--panel-h,42vh);
-    flex-shrink:0;
-    transition:height .25s;
-    position:relative;
-  }
+  #sidebar{width:100%!important;border-left:none;border-top:1px solid #1e2540;height:var(--panel-h,42vh);flex-shrink:0;transition:height .25s;position:relative}
   #sidebar.collapsed{height:36px!important}
   #sidebar-inner{min-width:0;width:100%}
-
-  /* Toggle: en móvil es un handle horizontal */
-  #sidebar-toggle{
-    position:static;
-    width:100%;height:36px;
-    border-radius:0;
-    border:none;
-    border-bottom:1px solid #1e2540;
-    left:auto;top:auto;
-    transform:none;
-    flex-direction:row;
-    gap:8px;
-    font-size:11px;
-    color:#6a8aaa;
-    font-weight:600;
-    justify-content:center;
-  }
+  #sidebar-toggle{position:static;width:100%;height:36px;border-radius:0;border:none;border-bottom:1px solid #1e2540;left:auto;top:auto;transform:none;flex-direction:row;gap:8px;font-size:11px;color:#6a8aaa;font-weight:600;justify-content:center}
   #sidebar-toggle::before{content:'';width:36px;height:3px;background:#2a3a50;border-radius:2px;display:block}
-
-  /* Mapa controls: esquina inferior izquierda para no tapar toggle */
   #map-controls{top:auto;bottom:50px;right:10px}
-
-  /* Stats en 2 columnas en móvil */
   #stats{grid-template-columns:1fr 1fr}
 }
-
-/* ══════════════════════════════════════════════════
-   DRAG OVERLAY
-══════════════════════════════════════════════════ */
-#drag-overlay{position:fixed;inset:0;background:rgba(10,20,50,.85);z-index:99997;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#6aaeff;font-size:16px;font-weight:600;border:3px dashed #2a5acc;pointer-events:none}
-#drag-overlay.show{display:flex}
-#drag-overlay svg{opacity:.7}
 </style>
 </head>
 <body>
 
-<!-- DRAG DROP OVERLAY -->
 <div id="drag-overlay">
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="8" y="12" width="32" height="28" rx="3" stroke="#6aaeff" stroke-width="2"/><path d="M24 20v12M18 26l6-6 6 6" stroke="#6aaeff" stroke-width="2" stroke-linecap="round"/></svg>
   Suelta el archivo Excel aquí
 </div>
 
-<!-- HEADER -->
 <div id="header">
   <div id="header-logo">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" flex-shrink="0">
@@ -335,56 +274,59 @@ select:focus{outline:none;border-color:#2a5acc}
   <button id="menu-toggle" onclick="toggleToolbar()" title="Menú">☰</button>
 </div>
 
-<!-- TOOLBAR -->
 <div id="toolbar">
-  <label id="upload-zone" for="file-input" title="También puedes arrastrar un archivo Excel aquí">↑ Excel / CSV</label>
+  <label id="upload-zone" for="file-input" title="Arrastra un archivo Excel aquí">↑ Excel / CSV</label>
   <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
-  <button class="btn" onclick="loadDemo()" title="Cargar 35 puntos de ejemplo en Lima">🗺 Demo</button>
+  <button class="btn" onclick="loadDemo()">🗺 Demo</button>
   <div class="sep"></div>
-  <button class="btn" id="btn-seg" onclick="openSegModal()" disabled title="Asignar segmento a cada cliente">⭐ Prioridades</button>
+  <button class="btn" id="btn-seg" onclick="openSegModal()" disabled>⭐ Prioridades</button>
   <div class="sep"></div>
-  <button class="btn go" id="btn-run" onclick="runAll()" disabled title="Calcular los 4 algoritmos y mostrar el mejor">⚡ Calcular</button>
-  <button class="btn" id="btn-clear" onclick="clearAll()" disabled title="Limpiar todo">✕</button>
-  <button class="btn exp" id="btn-export" onclick="exportRoute()" disabled title="Exportar ruta activa a Excel">↓ Exportar</button>
+  <button class="btn gps" id="btn-gps" onclick="toggleGPS()" title="Usar mi ubicación GPS como punto de inicio">📍 GPS</button>
+  <div class="sep"></div>
+  <button class="btn go" id="btn-run" onclick="runAll()" disabled>⚡ Calcular</button>
+  <button class="btn" id="btn-clear" onclick="clearAll()" disabled>✕ Limpiar</button>
+  <button class="btn exp" id="btn-export" onclick="exportRoute()" disabled>↓ Exportar</button>
 </div>
 
-<!-- ALGO BAR -->
 <div id="algo-bar">
   <span class="algo-label">Algoritmo:</span>
-  <button class="algo-btn selected" id="ab-0" onclick="selectAlgo(0)" title="Nearest Neighbor con múltiples inicios + 2-opt">① NN+2opt</button>
-  <button class="algo-btn" id="ab-1" onclick="selectAlgo(1)" title="Reinserción de nodos y segmentos">② Or-opt</button>
-  <button class="algo-btn" id="ab-2" onclick="selectAlgo(2)" title="Fusión de rutas por máximo ahorro">③ Clarke-Wright</button>
-  <button class="algo-btn" id="ab-3" onclick="selectAlgo(3)" title="Aristas cortas + perturbación double-bridge">④ Greedy+3opt</button>
+  <button class="algo-btn selected" id="ab-0" onclick="selectAlgo(0)">① NN+2opt</button>
+  <button class="algo-btn" id="ab-1" onclick="selectAlgo(1)">② Or-opt</button>
+  <button class="algo-btn" id="ab-2" onclick="selectAlgo(2)">③ Clarke-Wright</button>
+  <button class="algo-btn" id="ab-3" onclick="selectAlgo(3)">④ Greedy+3opt</button>
 </div>
 
 <div id="progress"><div id="progress-bar"></div></div>
 <div id="status-bar"><div class="dot" id="sdot"></div><span id="stxt">Sube un Excel o arrastra el archivo. Prueba el Demo para comenzar.</span></div>
 
-<!-- MAIN -->
 <div id="main">
   <div id="map"></div>
 
-  <!-- CONTROLES SOBRE EL MAPA -->
   <div id="map-controls">
-    <button class="map-btn" id="btn-zoom-route" onclick="zoomToRoute()" title="Centrar en la ruta actual">⊙</button>
-    <button class="map-btn" id="btn-toggle-labels" onclick="toggleLabels()" title="Mostrar/ocultar etiquetas de número">🔢</button>
-    <button class="map-btn" id="btn-satellite" onclick="cycleTiles()" title="Cambiar capa del mapa">🛰</button>
+    <button class="map-btn" id="btn-zoom-route" onclick="zoomToRoute()" title="Centrar en ruta">⊙</button>
+    <button class="map-btn" id="btn-toggle-labels" onclick="toggleLabels()" title="Números">🔢</button>
+    <button class="map-btn active" id="btn-add-point" onclick="toggleMapClickMode()" title="Agregar punto haciendo clic en el mapa">＋</button>
   </div>
 
   <div id="sidebar">
-    <!-- Handle toggle (desktop: lateral, móvil: top bar) -->
     <button id="sidebar-toggle" onclick="toggleSidebar()" title="Colapsar panel">◀</button>
-
     <div id="sidebar-inner">
-      <!-- Header sidebar -->
+
       <div id="sb-header">
         <span class="title">Orden de visita</span>
         <span class="cnt" id="pcnt">0 pts</span>
+        <span id="visited-badge">0 visitados</span>
       </div>
 
-      <!-- Buscador -->
-      <div id="search-box">
-        <input type="text" id="search-input" placeholder="🔍  Buscar cliente..." oninput="filterList(this.value)">
+      <!-- Tile switcher -->
+      <div id="tile-switcher">
+        <div class="tile-title">🗺 Capa del mapa</div>
+        <div class="tile-options">
+          <button class="tile-btn" id="tile-0" onclick="setTile(0)">🛰 Satélite</button>
+          <button class="tile-btn active" id="tile-1" onclick="setTile(1)">🌑 Oscuro</button>
+          <button class="tile-btn" id="tile-2" onclick="setTile(2)">🗺 Callejero</button>
+          <button class="tile-btn" id="tile-3" onclick="setTile(3)">☁ Claro</button>
+        </div>
       </div>
 
       <!-- Config -->
@@ -399,7 +341,7 @@ select:focus{outline:none;border-color:#2a5acc}
               <option value="-1">— Seleccionar —</option>
             </select>
           </div>
-          <div id="start-info" class="start-info">Sin punto de inicio. Selecciona arriba o haz clic en un marcador.</div>
+          <div id="start-info" class="start-info">Sin punto de inicio. Selecciona arriba o usa GPS.</div>
           <div class="cfg-row" style="margin-top:5px">
             <span class="cfg-label">Tiempo/visita</span>
             <select id="visit-time" onchange="updateTimeInfo()">
@@ -418,6 +360,42 @@ select:focus{outline:none;border-color:#2a5acc}
         </div>
       </div>
 
+      <!-- Agregar punto manualmente -->
+      <div id="add-point-panel">
+        <div class="add-title" onclick="toggleSection('add-body','add-arrow')">
+          ➕ Agregar punto <span class="arrow" id="add-arrow">▾</span>
+        </div>
+        <div class="add-body" id="add-body" style="max-height:200px">
+          <div class="add-row">
+            <input type="text" id="new-name" class="add-input" placeholder="Nombre del cliente">
+          </div>
+          <div class="add-row">
+            <input type="text" id="new-addr" class="add-input" placeholder="Dirección (opcional)">
+          </div>
+          <div class="add-coord-row">
+            <input type="text" id="new-lat" class="add-input" placeholder="Lat ej. -12.10">
+            <input type="text" id="new-lon" class="add-input" placeholder="Lon ej. -77.03">
+          </div>
+          <div class="add-row">
+            <select id="new-seg" class="add-input">
+              <option value="pequeño">· Pequeño</option>
+              <option value="mediano">🔷 Mediano</option>
+              <option value="grande">🔶 Grande</option>
+              <option value="clave">⭐ Clave</option>
+            </select>
+          </div>
+          <div class="add-row" style="gap:5px">
+            <button class="btn go" style="flex:1;font-size:11px" onclick="addPointManual()">+ Agregar</button>
+            <button class="btn" style="font-size:11px" onclick="toggleMapClickMode()" id="btn-map-click">📍 Del mapa</button>
+          </div>
+          <div id="map-click-mode">
+            ✦ Modo clic activo — toca el mapa para colocar el punto. Toca este botón para cancelar.
+            <br><button class="btn" style="font-size:10px;margin-top:4px;width:100%" onclick="toggleMapClickMode()">Cancelar</button>
+          </div>
+          <div class="add-hint">Después de agregar, presiona ⚡ Calcular para actualizar la ruta.</div>
+        </div>
+      </div>
+
       <!-- Leyenda segmentos -->
       <div id="priority-legend">
         <div class="pleg-title" onclick="toggleSection('pleg-body','pleg-arrow')">
@@ -429,7 +407,7 @@ select:focus{outline:none;border-color:#2a5acc}
           <div class="pleg-row"><div class="pleg-dot" style="background:#44aaff"></div>Mediano<span class="pleg-weight">×2</span></div>
           <div class="pleg-row"><div class="pleg-dot" style="background:#7a7aaa"></div>Pequeño<span class="pleg-weight">×1</span></div>
           <div class="pleg-row"><div class="pleg-dot" style="background:#22aa55;border-color:#fff"></div>Inicio<span class="pleg-weight">—</span></div>
-          <!-- Contadores clicables -->
+          <div class="pleg-row"><div class="pleg-dot" style="background:#00ccff;border-color:#fff"></div>GPS<span class="pleg-weight">—</span></div>
           <div id="seg-counts"></div>
         </div>
       </div>
@@ -439,7 +417,7 @@ select:focus{outline:none;border-color:#2a5acc}
         <div class="sc"><div class="sc-l">Distancia</div><div class="sc-v" id="sv-d">—</div></div>
         <div class="sc"><div class="sc-l">Paradas</div><div class="sc-v" id="sv-s">—</div></div>
         <div class="sc"><div class="sc-l">Conducción</div><div class="sc-v" id="sv-drive">—</div></div>
-        <div class="sc sc-full"><div class="sc-l">Tiempo total (conducción + visitas)</div><div class="sc-v big" id="sv-total">—</div></div>
+        <div class="sc sc-full"><div class="sc-l">Tiempo total</div><div class="sc-v big" id="sv-total">—</div></div>
         <div class="sc sc-full"><div class="sc-l">Horario estimado</div><div class="sc-v sm" id="sv-schedule">—</div></div>
         <div class="sc sc-full"><div class="sc-l">Algoritmo</div><div class="sc-v sm" id="sv-a">—</div></div>
       </div>
@@ -450,31 +428,30 @@ select:focus{outline:none;border-color:#2a5acc}
         <div id="cp-rows"></div>
       </div>
 
-      <!-- Lista de paradas -->
-      <div id="search-box" style="display:block;padding:5px 10px;border-bottom:1px solid #141820;flex-shrink:0">
-        <input type="text" id="search-input" placeholder="🔍 Buscar cliente..." oninput="filterList(this.value)"
-          style="width:100%;font-size:11px;padding:5px 8px;background:#0d1626;border:1px solid #1e3050;color:#aac4e0;border-radius:4px;font-family:inherit">
+      <!-- Buscador -->
+      <div id="search-wrap">
+        <input type="text" id="search-input" placeholder="🔍 Buscar cliente..." oninput="filterList(this.value)">
       </div>
+
+      <!-- Lista ruta -->
       <div id="route-list"><div class="empty">Ningún punto cargado</div></div>
 
       <div id="algo-desc">
-        <strong>①</strong> multi-start NN+2opt · <strong>②</strong> Or-opt reinserción · <strong>③</strong> Clarke-Wright savings · <strong>④</strong> greedy+double-bridge. Verde = mejor distancia.
+        <strong>①</strong> multi-start NN+2opt · <strong>②</strong> Or-opt · <strong>③</strong> Clarke-Wright · <strong>④</strong> greedy+double-bridge. Verde = mejor.
       </div>
     </div>
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
 
-<!-- MODAL PRIORIDADES -->
 <div id="seg-modal">
   <div class="modal-box">
     <div class="modal-title">⭐ Prioridades de clientes</div>
     <div class="modal-sub">Asigna segmento a cada cliente. Clave y Grande se visitan antes.</div>
     <input type="text" id="modal-search" placeholder="🔍 Buscar cliente..." oninput="filterModal(this.value)">
     <div class="modal-bulk">
-      <button class="btn" onclick="setAllSegment('clave')" style="font-size:10px;color:#ff6666;border-color:#4a1a1a">Todos → Clave</button>
+      <button class="btn" onclick="setAllSegment('clave')" style="font-size:10px;color:#ff6666;border-color:#4a1a1a">→ Clave</button>
       <button class="btn" onclick="setAllSegment('grande')" style="font-size:10px;color:#ffaa55;border-color:#4a2a0a">→ Grande</button>
       <button class="btn" onclick="setAllSegment('mediano')" style="font-size:10px;color:#55aaff;border-color:#0a2a4a">→ Mediano</button>
       <button class="btn" onclick="setAllSegment('pequeño')" style="font-size:10px">→ Pequeño</button>
@@ -489,32 +466,25 @@ select:focus{outline:none;border-color:#2a5acc}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-// ══════════════════════════════════════════════════
-//  UTILIDADES DOM (guard anti-null)
-// ══════════════════════════════════════════════════
+// ── UTILS ──────────────────────────────────────────
 function el(id){return document.getElementById(id);}
 function setText(id,v){var n=el(id);if(n)n.textContent=v;}
 function setHtml(id,v){var n=el(id);if(n)n.innerHTML=v;}
 function setStyle(id,p,v){var n=el(id);if(n)n.style[p]=v;}
 function setProp(id,p,v){var n=el(id);if(n)n[p]=v;}
 
-// ══════════════════════════════════════════════════
-//  TOAST
-// ══════════════════════════════════════════════════
+// ── TOAST ──────────────────────────────────────────
 function toast(msg,type,dur){
   type=type||'info'; dur=dur||2800;
   var c=el('toast-container');if(!c)return;
   var t=document.createElement('div');
   t.className='toast '+(type==='ok'?'ok':type==='warn'?'warn':type==='err'?'err':'');
-  t.textContent=msg;
-  c.appendChild(t);
+  t.textContent=msg; c.appendChild(t);
   requestAnimationFrame(function(){t.classList.add('show');});
   setTimeout(function(){t.classList.remove('show');setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},300);},dur);
 }
 
-// ══════════════════════════════════════════════════
-//  CONSTANTES
-// ══════════════════════════════════════════════════
+// ── CONSTANTS ──────────────────────────────────────
 var NAMES=['NN + 2-opt','Or-opt','Clarke-Wright','Greedy + 3-opt'];
 var COLORS=['#ff6b35','#22aaff','#ffdd22','#cc44ff'];
 var SEG_CONFIG={
@@ -524,151 +494,199 @@ var SEG_CONFIG={
   'pequeño':{label:'Pequeño',color:'#7a7aaa',weight:1}
 };
 
-// ══════════════════════════════════════════════════
-//  ESTADO GLOBAL
-// ══════════════════════════════════════════════════
-var map,points=[],results=[null,null,null,null];
-var activeAlgo=0,startIdx=0,markersLayer=[],routePolylines=[];
-var osrmToken=0,showNumbers=true,sidebarOpen=true;
-var tileIdx=0,tileLayers=[];
-var activeSegFilter=null; // null = mostrar todos
-
-// ══════════════════════════════════════════════════
-//  MAPA
-// ══════════════════════════════════════════════════
 var TILE_CONFIGS=[
   {url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-   label:'🛰 Satelital',attr:'Esri',max:19},
+   attr:'Esri World Imagery',hasLabels:true},
   {url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-   label:'🌑 Oscuro',attr:'© OSM © CARTO',max:19},
+   attr:'© OpenStreetMap © CARTO',hasLabels:false},
   {url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-   label:'🗺 Callejero',attr:'© OpenStreetMap',max:19}
+   attr:'© OpenStreetMap contributors',hasLabels:false},
+  {url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+   attr:'© OpenStreetMap © CARTO',hasLabels:false}
 ];
-var labelLayer=null;
 
+// ── STATE ──────────────────────────────────────────
+var map, points=[], results=[null,null,null,null];
+var activeAlgo=0, startIdx=0, markersLayer=[], routePolylines=[];
+var osrmToken=0, showNumbers=true, sidebarOpen=true;
+var currentTile=1, tileLayers=[], labelLayer=null;
+var activeSegFilter=null;
+var visitedSet=new Set();
+var gpsActive=false, gpsMarker=null, gpsWatchId=null, gpsPoint=null;
+var mapClickMode=false;
+var pointCounter=1000;
+
+// ── MAP INIT ──────────────────────────────────────
 window.addEventListener('DOMContentLoaded',function(){
   map=L.map('map',{center:[-12.1,-77.03],zoom:13,zoomControl:true});
-  // Capa base satelital
-  tileLayers[0]=L.tileLayer(TILE_CONFIGS[0].url,{attribution:TILE_CONFIGS[0].attr,maxZoom:19}).addTo(map);
+
+  // Build tile layers
+  tileLayers[0]=L.tileLayer(TILE_CONFIGS[0].url,{attribution:TILE_CONFIGS[0].attr,maxZoom:19});
   tileLayers[1]=L.tileLayer(TILE_CONFIGS[1].url,{attribution:TILE_CONFIGS[1].attr,maxZoom:19});
   tileLayers[2]=L.tileLayer(TILE_CONFIGS[2].url,{attribution:TILE_CONFIGS[2].attr,maxZoom:19});
-  // Labels encima
+  tileLayers[3]=L.tileLayer(TILE_CONFIGS[3].url,{attribution:TILE_CONFIGS[3].attr,maxZoom:19});
   labelLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-    {attribution:'© CARTO',maxZoom:19,opacity:0.8}).addTo(map);
+    {attribution:'',maxZoom:19,opacity:0.8});
 
-  // Drag & drop global
+  setTile(1); // default: dark
+
+  // Map click handler
+  map.on('click',function(e){
+    if(!mapClickMode)return;
+    el('new-lat').value=e.latlng.lat.toFixed(6);
+    el('new-lon').value=e.latlng.lng.toFixed(6);
+    toggleMapClickMode();
+    toast('Coordenadas capturadas. Completa el nombre y presiona + Agregar.','ok');
+  });
+
+  // Drag & drop
   document.body.addEventListener('dragenter',function(e){e.preventDefault();el('drag-overlay').classList.add('show');});
   document.body.addEventListener('dragleave',function(e){if(!e.relatedTarget||e.relatedTarget===document.documentElement)el('drag-overlay').classList.remove('show');});
   document.body.addEventListener('dragover',function(e){e.preventDefault();});
   document.body.addEventListener('drop',function(e){
     e.preventDefault();el('drag-overlay').classList.remove('show');
-    var f=e.dataTransfer.files[0];if(!f)return;
-    readFile(f);
+    var f=e.dataTransfer.files[0];if(!f)return;readFile(f);
   });
-  // Drag sobre upload-zone
-  var uz=el('upload-zone');
-  if(uz){
-    uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('dragover');});
-    uz.addEventListener('dragleave',function(){uz.classList.remove('dragover');});
-    uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('dragover');var f=e.dataTransfer.files[0];if(f)readFile(f);});
-  }
-  // Responsive: ajustar handle del sidebar en móvil
+
   handleResize();
   window.addEventListener('resize',handleResize);
 });
 
-function handleResize(){
-  var isMobile=window.innerWidth<=640;
-  var tog=el('sidebar-toggle');
-  if(!tog)return;
-  if(isMobile){
-    tog.title='Expandir/colapsar panel';
-    tog.onclick=function(){toggleSidebarMobile();};
-  }else{
-    tog.onclick=function(){toggleSidebar();};
+// ── TILE SWITCHER ─────────────────────────────────
+function setTile(idx){
+  // Remove all tile layers
+  for(var i=0;i<tileLayers.length;i++){if(map.hasLayer(tileLayers[i]))map.removeLayer(tileLayers[i]);}
+  if(map.hasLayer(labelLayer))map.removeLayer(labelLayer);
+
+  currentTile=idx;
+  tileLayers[idx].addTo(map);
+
+  // Add label overlay for satellite
+  if(idx===0) labelLayer.addTo(map);
+
+  // Update buttons
+  for(var j=0;j<4;j++){
+    var b=el('tile-'+j);
+    if(b)b.className='tile-btn'+(j===idx?' active':'');
   }
 }
 
-// ══════════════════════════════════════════════════
-//  UI HELPERS
-// ══════════════════════════════════════════════════
-function setStatus(msg,s){
-  setText('stxt',msg);
-  var d=el('sdot');
-  if(d)d.className='dot '+({run:'run',ok:'ok',warn:'warn'}[s]||'');
-}
-function setProgress(p){setStyle('progress-bar','width',p+'%');}
-function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
-function fmtMin(m){var h=Math.floor(m/60),mn=Math.round(m%60);return h>0?(h+'h '+(mn>0?mn+'min':'')):(mn+'min');}
-function addMinToTime(t,mins){
-  var p=t.split(':'),h=parseInt(p[0]),m=parseInt(p[1]),tot=h*60+m+Math.round(mins);
-  var nh=Math.floor(tot/60)%24,nm=tot%60;
-  return(nh<10?'0':'')+nh+':'+(nm<10?'0':'')+nm;
-}
-function updateTimeInfo(){
-  var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
-  var st=(el('start-time')||{value:'08:00'}).value||'08:00';
-  if(!points.length){setText('time-info','Configura y calcula para ver el horario.');return;}
-  setText('time-info',points.length+' visitas × '+vm+' min = '+fmtMin(points.length*vm)+'. Salida: '+st);
-}
-function toggleToolbar(){
-  var tb=el('toolbar');if(!tb)return;
-  tb.classList.toggle('collapsed');
-}
-function toggleSidebar(){
-  var sb=el('sidebar'),tog=el('sidebar-toggle');if(!sb)return;
-  sidebarOpen=!sidebarOpen;
-  sb.classList.toggle('collapsed',!sidebarOpen);
-  if(tog)tog.textContent=sidebarOpen?'▶':'◀';
-  setTimeout(function(){if(map)map.invalidateSize();},220);
-}
-function toggleSidebarMobile(){
-  var sb=el('sidebar');if(!sb)return;
-  var isCollapsed=sb.classList.contains('collapsed');
-  sb.classList.toggle('collapsed',!isCollapsed);
-  setTimeout(function(){if(map)map.invalidateSize();},270);
-}
-function toggleSection(bodyId,arrowId){
-  var body=el(bodyId),arrow=el(arrowId);if(!body)return;
-  var collapsed=body.classList.toggle('collapsed');
-  if(arrow)arrow.textContent=collapsed?'▸':'▾';
-  if(collapsed)body.style.maxHeight='0';
-  else body.style.maxHeight='300px';
+// ── MAP CLICK MODE ────────────────────────────────
+function toggleMapClickMode(){
+  mapClickMode=!mapClickMode;
+  var btn=el('btn-map-click');
+  var hint=el('map-click-mode');
+  var addBtn=el('btn-add-point');
+  if(mapClickMode){
+    map.getContainer().style.cursor='crosshair';
+    if(hint)hint.classList.add('active');
+    if(addBtn)addBtn.classList.add('active');
+    toast('Toca el mapa para colocar el punto','ok',2000);
+  }else{
+    map.getContainer().style.cursor='';
+    if(hint)hint.classList.remove('active');
+    if(addBtn)addBtn.classList.remove('active');
+  }
 }
 
-// ══════════════════════════════════════════════════
-//  CONTROLES SOBRE EL MAPA
-// ══════════════════════════════════════════════════
-function zoomToRoute(){
-  if(!points.length){toast('No hay puntos cargados','warn');return;}
-  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
-  var lats=order.map(function(i){return points[i].lat;}),lons=order.map(function(i){return points[i].lon;});
-  map.fitBounds([[Math.min.apply(null,lats),Math.min.apply(null,lons)],[Math.max.apply(null,lats),Math.max.apply(null,lons)]],{padding:[50,50],animate:true});
+// ── GPS ───────────────────────────────────────────
+function toggleGPS(){
+  if(!gpsActive){
+    startGPS();
+  }else{
+    stopGPS();
+  }
 }
-function toggleLabels(){
-  showNumbers=!showNumbers;
-  var b=el('btn-toggle-labels');if(b)b.classList.toggle('active',showNumbers);
+function startGPS(){
+  if(!navigator.geolocation){toast('Geolocalización no disponible en este dispositivo','err');return;}
+  setStatus('Obteniendo ubicación GPS...','gps');
+  var btn=el('btn-gps');if(btn)btn.classList.add('active');
+  gpsWatchId=navigator.geolocation.watchPosition(
+    function(pos){
+      var lat=pos.coords.lat||pos.coords.latitude,lon=pos.coords.lon||pos.coords.longitude;
+      // Leaflet watchPosition uses .coords.latitude/.longitude
+      lat=pos.coords.latitude; lon=pos.coords.longitude;
+      gpsActive=true;
+      updateGPSMarker(lat,lon);
+      toast('GPS activo · Exactitud: '+(pos.coords.accuracy?Math.round(pos.coords.accuracy)+'m':'?'),'ok',2000);
+      setStatus('GPS activo — ubicación en tiempo real','gps');
+      setStyle('add-point-panel','display','block');
+    },
+    function(err){
+      gpsActive=false;
+      var btn=el('btn-gps');if(btn)btn.classList.remove('active');
+      var msgs={1:'Permiso de ubicación denegado.',2:'Ubicación no disponible.',3:'Tiempo de espera agotado.'};
+      toast(msgs[err.code]||'Error GPS','err');
+      setStatus('GPS no disponible','warn');
+    },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:5000}
+  );
+}
+function stopGPS(){
+  if(gpsWatchId!==null){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}
+  gpsActive=false;
+  var btn=el('btn-gps');if(btn)btn.classList.remove('active');
+  if(gpsMarker){map.removeLayer(gpsMarker);gpsMarker=null;}
+  gpsPoint=null;
+  setStatus('GPS desactivado','ok');
+  toast('GPS desactivado','ok',1500);
+  // Remove GPS start point if it was set
+  if(startIdx===-99){
+    startIdx=0;
+    var si=el('start-info');
+    if(si){si.textContent='Sin punto de inicio GPS.';si.className='start-info';}
+  }
+}
+function updateGPSMarker(lat,lon){
+  var icon=L.divIcon({
+    html:'<div class="gps-marker-inner gps-pulse"></div>',
+    className:'',iconSize:[16,16],iconAnchor:[8,8]
+  });
+  if(!gpsMarker){
+    gpsMarker=L.marker([lat,lon],{icon:icon,zIndexOffset:1000}).addTo(map);
+    gpsMarker.bindPopup(
+      '<div><div style="font-size:12px;font-weight:700;color:#00ccff;margin-bottom:4px">📍 Mi ubicación</div>'+
+      '<button onclick="useGPSAsStart()" style="font-size:10px;padding:3px 8px;background:#061e2a;border:1px solid #2a6a8a;color:#55ccff;border-radius:3px;cursor:pointer;width:100%">Usar como punto de inicio</button></div>'
+    );
+  }else{
+    gpsMarker.setLatLng([lat,lon]);
+  }
+  gpsPoint={lat:lat,lon:lon};
+}
+function useGPSAsStart(){
+  if(!gpsPoint){toast('Activa el GPS primero','warn');return;}
+  // Insert or update GPS point in points array
+  var existing=points.findIndex(function(p){return p._isGPS;});
+  if(existing>=0){
+    points[existing].lat=gpsPoint.lat;
+    points[existing].lon=gpsPoint.lon;
+    startIdx=existing;
+  }else{
+    var gp={id:--pointCounter,name:'Mi Ubicación (GPS)',address:'Posición GPS actual',lat:gpsPoint.lat,lon:gpsPoint.lon,segment:'pequeño',_isGPS:true};
+    points.unshift(gp);
+    startIdx=0;
+    populateStartSelect();
+    updateSegCounts();
+    setText('pcnt',points.length+' pts');
+    setStyle('search-wrap','display','block');
+    setStyle('add-point-panel','display','block');
+    setProp('btn-run','disabled',false);
+    setProp('btn-clear','disabled',false);
+    setProp('btn-seg','disabled',false);
+  }
+  var si=el('start-info');
+  if(si){si.textContent='📍 GPS activo como inicio';si.className='start-info gps-active';}
+  var sel=el('start-select');if(sel)sel.value=startIdx;
   var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
   renderMarkers(order,activeAlgo,startIdx);
-  toast(showNumbers?'Números activados':'Números ocultos','ok',1500);
-}
-function cycleTiles(){
-  if(tileLayers[tileIdx])map.removeLayer(tileLayers[tileIdx]);
-  tileIdx=(tileIdx+1)%3;
-  tileLayers[tileIdx].addTo(map);
-  // Labels encima solo en satelital/oscuro
-  if(labelLayer){if(tileIdx===2)map.removeLayer(labelLayer);else labelLayer.addTo(map);}
-  var b=el('btn-satellite');
-  if(b)b.title=TILE_CONFIGS[(tileIdx+1)%3].label;
-  toast('Mapa: '+TILE_CONFIGS[tideIdx=tileIdx,tileIdx].label,'ok',1500);
+  renderList(order);
+  toast('Ubicación GPS establecida como inicio','ok');
+  map.closePopup();
 }
 
-// ══════════════════════════════════════════════════
-//  FILE INPUT
-// ══════════════════════════════════════════════════
+// ── FILE INPUT ────────────────────────────────────
 el('file-input').addEventListener('change',function(e){
-  var f=e.target.files[0];if(!f)return;
-  readFile(f);this.value='';
+  var f=e.target.files[0];if(!f)return;readFile(f);this.value='';
 });
 function readFile(f){
   setStatus('Leyendo "'+f.name+'"...','run');setProgress(10);
@@ -685,16 +703,13 @@ function readFile(f){
       setProgress(100);setTimeout(function(){setProgress(0);},700);
     }catch(err){
       setStatus('Error: '+err.message,'warn');
-      toast(err.message,'err',4000);
-      setProgress(0);
+      toast(err.message,'err',4000);setProgress(0);
     }
   };
   r.readAsArrayBuffer(f);
 }
 
-// ══════════════════════════════════════════════════
-//  PARSEO DE EXCEL
-// ══════════════════════════════════════════════════
+// ── PARSE ─────────────────────────────────────────
 function findCol(hdr){
   var keys=Array.prototype.slice.call(arguments,1);
   for(var k=0;k<keys.length;k++){
@@ -733,13 +748,11 @@ function parseRows(rows){
     out.push({id:i,name:(iN>=0&&row[iN])?String(row[iN]).trim():'Punto '+i,
               address:(iA>=0&&row[iA])?String(row[iA]).trim():'',lat:lat,lon:lon,segment:seg});
   }
-  if(out.length<2)throw new Error('Sin coordenadas válidas en Lima. Necesita columnas lat/lon o "coordenadas".');
+  if(out.length<2)throw new Error('Sin coordenadas válidas. Necesita columnas lat/lon.');
   return out;
 }
 
-// ══════════════════════════════════════════════════
-//  DEMO
-// ══════════════════════════════════════════════════
+// ── DEMO ──────────────────────────────────────────
 function loadDemo(){
   var raw=[
     ['Distribuidora Central Lima','Av. Javier Prado Este 3000',-12.0990,-77.0060,'clave'],
@@ -779,26 +792,26 @@ function loadDemo(){
     ['Bodega La Encalada','Av. La Encalada 250',-12.1100,-77.0010,'pequeño']
   ];
   loadPoints(raw.map(function(r,i){return{id:i+1,name:r[0],address:r[1],lat:r[2],lon:r[3],segment:r[4]};}));
-  toast('Demo cargado: 35 puntos en Lima','ok');
-  setStatus('Demo 35 pts. Configura punto de inicio y presiona ⚡ Calcular.','ok');
+  toast('Demo: 35 puntos en Lima','ok');
+  setStatus('Demo cargado. Configura inicio y presiona ⚡ Calcular.','ok');
 }
 
-// ══════════════════════════════════════════════════
-//  CARGAR PUNTOS
-// ══════════════════════════════════════════════════
+// ── LOAD POINTS ───────────────────────────────────
 function loadPoints(pts){
   clearAll(false);
-  points=pts; startIdx=0; activeSegFilter=null;
+  points=pts; startIdx=0; activeSegFilter=null; visitedSet=new Set();
   renderMarkers(pts.map(function(_,i){return i;}),0,0);
   renderList(pts.map(function(_,i){return i;}));
   populateStartSelect();
   updateStartInfo();
   updateTimeInfo();
   updateSegCounts();
+  updateVisitedBadge();
   setProp('btn-run','disabled',false);
   setProp('btn-clear','disabled',false);
   setProp('btn-seg','disabled',false);
-  setStyle('search-box','display','block');
+  setStyle('search-wrap','display','block');
+  setStyle('add-point-panel','display','block');
   setText('pcnt',pts.length+' pts');
   if(pts.length>0){
     var lats=pts.map(function(p){return p.lat;}),lons=pts.map(function(p){return p.lon;});
@@ -806,9 +819,89 @@ function loadPoints(pts){
   }
 }
 
-// ══════════════════════════════════════════════════
-//  CONTADORES DE SEGMENTO (clicables para filtrar)
-// ══════════════════════════════════════════════════
+// ── ADD POINT MANUALLY ────────────────────────────
+function addPointManual(){
+  var name=(el('new-name').value||'').trim();
+  var addr=(el('new-addr').value||'').trim();
+  var latV=(el('new-lat').value||'').trim();
+  var lonV=(el('new-lon').value||'').trim();
+  var seg=el('new-seg').value||'pequeño';
+  if(!name){toast('Ingresa el nombre del cliente','warn');return;}
+  if(!latV||!lonV){toast('Ingresa las coordenadas o usa el modo clic del mapa','warn');return;}
+  var lat=parseFloat(latV.replace(',','.')),lon=parseFloat(lonV.replace(',','.'));
+  if(isNaN(lat)||isNaN(lon)){toast('Coordenadas inválidas','err');return;}
+  var newPt={id:--pointCounter,name:name,address:addr,lat:lat,lon:lon,segment:seg};
+  points.push(newPt);
+  el('new-name').value='';el('new-addr').value='';el('new-lat').value='';el('new-lon').value='';
+  populateStartSelect();
+  updateSegCounts();
+  setText('pcnt',points.length+' pts');
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  if(results[activeAlgo]){order=results[activeAlgo].tour.concat([points.length-1]);}
+  renderMarkers(order,activeAlgo,startIdx);
+  renderList(order);
+  results=[null,null,null,null];
+  setStyle('compare-panel','display','none');
+  toast('Punto agregado: '+name+'. Presiona ⚡ Calcular para actualizar la ruta.','ok',3500);
+  setStatus('Punto agregado. Recalcula para incluirlo en la ruta.','ok');
+}
+
+// ── REMOVE POINT ──────────────────────────────────
+function removePoint(idx, e){
+  if(e)e.stopPropagation();
+  var name=points[idx]?points[idx].name:'?';
+  if(!confirm('¿Eliminar "'+name+'" de la lista?'))return;
+  // Adjust startIdx
+  if(idx===startIdx) startIdx=0;
+  else if(idx<startIdx) startIdx=Math.max(0,startIdx-1);
+  // Remove from visited set (rebuild with new indices)
+  var newVisited=new Set();
+  visitedSet.forEach(function(vi){
+    if(vi<idx) newVisited.add(vi);
+    else if(vi>idx) newVisited.add(vi-1);
+  });
+  visitedSet=newVisited;
+  points.splice(idx,1);
+  results=[null,null,null,null];
+  if(!points.length){clearAll(false);setStatus('Sin puntos. Agrega o carga un archivo.','idle');return;}
+  if(startIdx>=points.length)startIdx=0;
+  populateStartSelect();
+  updateStartInfo();
+  updateSegCounts();
+  setText('pcnt',points.length+' pts');
+  var order=points.map(function(_,i){return i;});
+  renderMarkers(order,activeAlgo,startIdx);
+  renderList(order);
+  setStyle('compare-panel','display','none');
+  updateVisitedBadge();
+  toast('"'+name+'" eliminado. Recalcula la ruta.','warn',3000);
+}
+
+// ── MARK VISITED ──────────────────────────────────
+function toggleVisited(idx, e){
+  if(e)e.stopPropagation();
+  if(visitedSet.has(idx)){
+    visitedSet.delete(idx);
+    toast(points[idx].name+' → pendiente','ok',1800);
+  }else{
+    visitedSet.add(idx);
+    toast('✓ '+points[idx].name+' visitado','ok',1800);
+  }
+  updateVisitedBadge();
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  renderList(order);
+}
+function updateVisitedBadge(){
+  var b=el('visited-badge');if(!b)return;
+  if(visitedSet.size>0){
+    b.style.display='inline-block';
+    b.textContent=visitedSet.size+' visitado'+(visitedSet.size>1?'s':'');
+  }else{
+    b.style.display='none';
+  }
+}
+
+// ── SEG COUNTS ────────────────────────────────────
 function updateSegCounts(){
   var c=el('seg-counts');if(!c)return;
   var counts={clave:0,grande:0,mediano:0,'pequeño':0};
@@ -818,9 +911,8 @@ function updateSegCounts(){
     if(!counts[s])return;
     var sc=SEG_CONFIG[s];
     var span=document.createElement('span');
-    span.className='seg-count'+(activeSegFilter===s?' ':' ');
-    span.style.background=sc.color+'22';
-    span.style.color=sc.color;
+    span.className='seg-count';
+    span.style.background=sc.color+'22';span.style.color=sc.color;
     span.textContent=sc.label+' '+counts[s];
     span.setAttribute('data-seg',s);
     span.onclick=function(){
@@ -839,7 +931,6 @@ function filterBySegment(seg){
     var p=points[idx];if(!p)return;
     row.classList.toggle('filtered-out',!!(seg&&(p.segment||'pequeño')!==seg));
   });
-  // Filtrar marcadores
   markersLayer.forEach(function(m,i){
     var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,ii){return ii;});
     if(i>=order.length)return;
@@ -847,12 +938,8 @@ function filterBySegment(seg){
     var hide=!!(seg&&(p.segment||'pequeño')!==seg&&order[i]!==startIdx);
     if(hide)m.setOpacity(0.15);else m.setOpacity(1);
   });
-  toast(seg?('Mostrando solo: '+SEG_CONFIG[seg].label):'Mostrando todos','ok',1800);
+  toast(seg?('Solo: '+SEG_CONFIG[seg].label):'Todos los segmentos','ok',1800);
 }
-
-// ══════════════════════════════════════════════════
-//  BUSCADOR DE CLIENTES
-// ══════════════════════════════════════════════════
 function filterList(q){
   q=q.toLowerCase().trim();
   document.querySelectorAll('.ri').forEach(function(row){
@@ -864,9 +951,7 @@ function filterList(q){
   });
 }
 
-// ══════════════════════════════════════════════════
-//  PUNTO DE INICIO
-// ══════════════════════════════════════════════════
+// ── START SELECT ──────────────────────────────────
 function populateStartSelect(){
   var sel=el('start-select');if(!sel)return;
   sel.innerHTML='';
@@ -891,13 +976,18 @@ function updateStartInfo(){
   var node=el('start-info');if(!node)return;
   if(!points.length){node.textContent='Sin punto de inicio.';node.className='start-info';return;}
   var p=points[startIdx];if(!p){node.textContent='Sin punto.';node.className='start-info';return;}
+  if(p._isGPS){node.textContent='📍 GPS: '+p.name;node.className='start-info gps-active';return;}
   node.textContent='★ '+p.name+' ('+SEG_CONFIG[p.segment||'pequeño'].label+')'+(p.address?' · '+p.address:'');
   node.className='start-info active';
 }
+function updateTimeInfo(){
+  var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
+  var st=(el('start-time')||{value:'08:00'}).value||'08:00';
+  if(!points.length){setText('time-info','Configura y calcula para ver el horario.');return;}
+  setText('time-info',points.length+' visitas × '+vm+' min = '+fmtMin(points.length*vm)+'. Salida: '+st);
+}
 
-// ══════════════════════════════════════════════════
-//  MODAL PRIORIDADES
-// ══════════════════════════════════════════════════
+// ── MODAL ─────────────────────────────────────────
 function openSegModal(){
   var list=el('modal-list');if(!list)return;
   list.innerHTML='';
@@ -908,9 +998,8 @@ function openSegModal(){
     div.setAttribute('data-name',p.name.toLowerCase());
     div.innerHTML=
       '<div class="modal-dot" style="background:'+sc.color+'" data-dot="'+i+'"></div>'+
-      '<div style="flex:1;min-width:0">'+
-        '<div class="modal-name">'+p.name+'</div>'+
-        (p.address?'<div class="modal-addr">'+p.address+'</div>':'')+
+      '<div style="flex:1;min-width:0"><div class="modal-name">'+p.name+'</div>'+
+      (p.address?'<div class="modal-addr">'+p.address+'</div>':'')+
       '</div>'+
       '<select class="seg-select" data-idx="'+i+'">'+
         ['clave','grande','mediano','pequeño'].map(function(s){
@@ -939,30 +1028,25 @@ function closeSegModal(){
   updateSegCounts();
   toast('Prioridades guardadas','ok',1800);
 }
-function setAllSegment(seg){
-  points.forEach(function(p){p.segment=seg;});
-  openSegModal();
-}
+function setAllSegment(seg){points.forEach(function(p){p.segment=seg;});openSegModal();}
 function filterModal(q){
   q=q.toLowerCase().trim();
   document.querySelectorAll('#modal-list .modal-item').forEach(function(item){
-    var name=item.getAttribute('data-name')||'';
-    item.classList.toggle('hidden',!!(q&&name.indexOf(q)<0));
+    item.classList.toggle('hidden',!!(q&&(item.getAttribute('data-name')||'').indexOf(q)<0));
   });
 }
 el('seg-modal').addEventListener('click',function(e){if(e.target===this)closeSegModal();});
 
-// ══════════════════════════════════════════════════
-//  MARCADORES
-// ══════════════════════════════════════════════════
-function makeIcon(num,bg,isStart){
-  var sz=isStart?28:24,fs=isStart?11:10;
-  var border=isStart?'3px solid #fff':'2px solid rgba(255,255,255,.7)';
-  var shadow=isStart?'0 0 0 3px rgba(34,170,85,.45),0 2px 8px rgba(0,0,0,.6)':'0 2px 6px rgba(0,0,0,.5)';
+// ── MARKERS ───────────────────────────────────────
+function makeIcon(num,bg,isStart,isGPS,isVisited){
+  var sz=isStart||isGPS?28:24,fs=isStart||isGPS?11:10;
+  var border=isStart?'3px solid #fff':isGPS?'3px solid #00eeff':'2px solid rgba(255,255,255,.7)';
+  var shadow=isStart||isGPS?'0 0 0 3px rgba(34,170,85,.45),0 2px 8px rgba(0,0,0,.6)':'0 2px 6px rgba(0,0,0,.5)';
   var label=showNumbers?num:'';
+  var opacity=isVisited?'0.4':'1';
   return L.divIcon({
     html:'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+bg+';border:'+border+
-         ';display:flex;align-items:center;justify-content:center;font-size:'+fs+'px;font-weight:700;color:#fff;box-shadow:'+shadow+'">'+label+'</div>',
+         ';display:flex;align-items:center;justify-content:center;font-size:'+fs+'px;font-weight:700;color:#fff;box-shadow:'+shadow+';opacity:'+opacity+'">'+label+'</div>',
     className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],popupAnchor:[0,-sz/2-2]
   });
 }
@@ -971,23 +1055,30 @@ function renderMarkers(order,aIdx,sIdx){
   order.forEach(function(idx,pos){
     var p=points[idx];if(!p)return;
     var isStart=(idx===sIdx);
-    var color=isStart?'#22aa55':SEG_CONFIG[p.segment||'pequeño'].color;
+    var isGPS=!!(p._isGPS);
+    var isVisited=visitedSet.has(idx);
+    var color=isGPS?'#00aacc':isStart?'#22aa55':SEG_CONFIG[p.segment||'pequeño'].color;
     var sc=SEG_CONFIG[p.segment||'pequeño'];
-    var m=L.marker([p.lat,p.lon],{icon:makeIcon(pos+1,color,isStart)}).addTo(map);
-    m.bindPopup(
+    var m=L.marker([p.lat,p.lon],{icon:makeIcon(pos+1,color,isStart,isGPS,isVisited)}).addTo(map);
+    var popupContent=
       '<div style="min-width:170px">'+
       '<div style="font-size:12px;font-weight:700;color:#6aaeff;margin-bottom:3px">'+(pos+1)+'. '+p.name+'</div>'+
       (p.address?'<div style="color:#6a8aaa;font-size:11px;margin-bottom:3px">'+p.address+'</div>':'')+
       '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'+
         '<div style="width:9px;height:9px;border-radius:50%;background:'+sc.color+'"></div>'+
         '<span style="font-size:11px;color:'+sc.color+'">'+sc.label+'</span>'+
+        (isVisited?'<span style="font-size:10px;color:#7acc44;margin-left:4px">✓ visitado</span>':'')+
       '</div>'+
-      (isStart
-        ?'<div style="font-size:10px;color:#22aa55;font-weight:600">★ PUNTO DE INICIO</div>'
-        :'<button onclick="setStartFromMap('+idx+')" style="font-size:10px;padding:3px 8px;background:#0d1e0d;border:1px solid #2a5a2a;color:#6aaa6a;border-radius:3px;cursor:pointer;width:100%;margin-top:2px">Establecer como inicio</button>'
-      )+'</div>'
-    );
-    if(activeSegFilter&&(p.segment||'pequeño')!==activeSegFilter&&!isStart)m.setOpacity(0.15);
+      (isGPS?'<div style="font-size:10px;color:#00ccff;font-weight:600">📍 PUNTO GPS</div>':
+        isStart?'<div style="font-size:10px;color:#22aa55;font-weight:600">★ PUNTO DE INICIO</div>':
+        '<div style="display:flex;gap:4px;margin-top:4px">'+
+          '<button onclick="setStartFromMap('+idx+')" style="font-size:10px;padding:3px 6px;background:#0d1e0d;border:1px solid #2a5a2a;color:#6aaa6a;border-radius:3px;cursor:pointer;flex:1">★ Inicio</button>'+
+          '<button onclick="toggleVisitedFromMap('+idx+')" style="font-size:10px;padding:3px 6px;background:#1a2a0d;border:1px solid #3a5a1a;color:#7acc44;border-radius:3px;cursor:pointer;flex:1">'+(isVisited?'↺ Pendiente':'✓ Visitado')+'</button>'+
+          '<button onclick="removePointFromMap('+idx+')" style="font-size:10px;padding:3px 6px;background:#1e0d0d;border:1px solid #5a1a1a;color:#aa4a4a;border-radius:3px;cursor:pointer">✕</button>'+
+        '</div>'
+      )+'</div>';
+    m.bindPopup(popupContent);
+    if(activeSegFilter&&(p.segment||'pequeño')!==activeSegFilter&&!isStart&&!isGPS)m.setOpacity(0.15);
     markersLayer.push(m);
   });
 }
@@ -996,26 +1087,23 @@ function setStartFromMap(idx){
   var sel=el('start-select');if(sel)sel.value=idx;
   updateStartInfo();
   var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
-  renderMarkers(order,activeAlgo,startIdx);
-  renderList(order);
+  renderMarkers(order,activeAlgo,startIdx);renderList(order);
   toast('Inicio → '+points[idx].name,'ok',2000);
-  setStatus('Inicio → '+points[idx].name+'. Recalcula para aplicar.','ok');
+  map.closePopup();
 }
+function toggleVisitedFromMap(idx){map.closePopup();toggleVisited(idx,null);}
+function removePointFromMap(idx){map.closePopup();removePoint(idx,null);}
 function setStartFromList(idx,e){
-  e.stopPropagation();
-  startIdx=idx;
+  e.stopPropagation();startIdx=idx;
   var sel=el('start-select');if(sel)sel.value=idx;
   updateStartInfo();
   var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
-  renderMarkers(order,activeAlgo,startIdx);
-  renderList(order);
+  renderMarkers(order,activeAlgo,startIdx);renderList(order);
   toast('Inicio → '+points[idx].name,'ok',2000);
 }
 function clearLines(){routePolylines.forEach(function(l){map.removeLayer(l);});routePolylines=[];}
 
-// ══════════════════════════════════════════════════
-//  DISTANCIAS
-// ══════════════════════════════════════════════════
+// ── DISTANCES ────────────────────────────────────
 function hav(a,b){
   var R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
   var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
@@ -1039,9 +1127,7 @@ function buildDRaw(pts){
 function tourLen(D,t){var d=0;for(var i=0;i<t.length-1;i++)d+=D[t[i]][t[i+1]];return d;}
 function rotateTour(tour,sIdx){var pos=tour.indexOf(sIdx);if(pos<=0)return tour;return tour.slice(pos).concat(tour.slice(0,pos));}
 
-// ══════════════════════════════════════════════════
-//  2-OPT
-// ══════════════════════════════════════════════════
+// ── 2-OPT ─────────────────────────────────────────
 function twoOpt(D,tour){
   var n=tour.length,best=tour.slice(),imp=true,it=0,tmp;
   while(imp&&it<400){imp=false;it++;
@@ -1054,9 +1140,7 @@ function twoOpt(D,tour){
   return best;
 }
 
-// ══════════════════════════════════════════════════
-//  ALGORITMOS
-// ══════════════════════════════════════════════════
+// ── ALGORITHMS ────────────────────────────────────
 function algoNN2opt(D,sIdx){
   var n=D.length,bestTour=null,bestLen=Infinity,starts=[sIdx];
   for(var k=0;k<n&&starts.length<8;k++)if(k!==sIdx)starts.push(k);
@@ -1079,17 +1163,6 @@ function algoOrOpt(D,sIdx){
         if(j>=i-1&&j<=i+1)continue;
         var costI=D[tour[j]][node]+D[node][tour[j+1]]-D[tour[j]][tour[j+1]];
         if(costI-costR<-1e-9){var nt=[];for(var k=0;k<tour.length;k++)if(k!==i)nt.push(tour[k]);var ins=j<i?j+1:j;nt.splice(ins,0,node);tour=nt;n=tour.length;imp=true;found=true;}
-      }
-    }
-    var f2=false;
-    for(var i=1;i<n-2&&!f2;i++){
-      if(tour[i]===sIdx||tour[i+1]===sIdx)continue;
-      var n1=tour[i],n2=tour[i+1];if(i+2>=n)continue;
-      var cR=D[tour[i-1]][n1]+D[n2][tour[i+2]]-D[tour[i-1]][tour[i+2]];
-      for(var j=0;j<n-2&&!f2;j++){
-        if(j>=i-1&&j<=i+2||j+1>=n)continue;
-        var cI=D[tour[j]][n1]+D[n2][tour[j+1]]-D[tour[j]][tour[j+1]];
-        if(cI-cR<-1e-9){var nt=[];for(var k=0;k<tour.length;k++)if(k!==i&&k!==i+1)nt.push(tour[k]);var ins=j<i?j+1:j-1;if(ins<0)ins=0;if(ins>nt.length)ins=nt.length;nt.splice(ins,0,n1,n2);tour=nt;n=tour.length;imp=true;f2=true;}
       }
     }
   }
@@ -1130,9 +1203,7 @@ function algoGreedy3opt(D,sIdx){
   return rotateTour(best,sIdx);
 }
 
-// ══════════════════════════════════════════════════
-//  OSRM
-// ══════════════════════════════════════════════════
+// ── OSRM ──────────────────────────────────────────
 function fetchOSRM(order){
   var coords=order.map(function(i){return points[i].lon+','+points[i].lat;}).join(';');
   var url='https://router.project-osrm.org/trip/v1/driving/'+coords+'?roundtrip=false&source=first&destination=last&overview=full&geometries=geojson';
@@ -1151,16 +1222,13 @@ function drawDirect(order,color){
   routePolylines.push(L.polyline(ll,{color:color,weight:3,opacity:.6,dashArray:'8 5'}).addTo(map));
 }
 
-// ══════════════════════════════════════════════════
-//  CALCULAR TODOS
-// ══════════════════════════════════════════════════
+// ── RUN ALL ───────────────────────────────────────
 function runAll(){
   if(points.length<2){toast('Necesitas al menos 2 puntos','warn');return;}
   osrmToken++;
   setProp('btn-run','disabled',true);
-  // Resetear indicadores de algo buttons
   for(var i=0;i<4;i++){var b=el('ab-'+i);if(b)b.className='algo-btn'+(i===activeAlgo?' selected':'');}
-  setStatus('Construyendo matriz con ponderación de prioridades...','run');setProgress(3);
+  setStatus('Construyendo matriz de distancias...','run');setProgress(3);
   sleep(10).then(function(){
     var D=buildD(points,startIdx),Draw=buildDRaw(points);
     var fns=[algoNN2opt,algoOrOpt,algoClarkeWright,algoGreedy3opt];
@@ -1191,9 +1259,7 @@ function runAll(){
   });
 }
 
-// ══════════════════════════════════════════════════
-//  SELECCIONAR ALGORITMO
-// ══════════════════════════════════════════════════
+// ── SELECT ALGO ───────────────────────────────────
 function selectAlgo(idx){
   if(!results[idx])return;
   activeAlgo=idx;
@@ -1204,11 +1270,10 @@ function selectAlgo(idx){
   setStyle('stats','display','grid');
   setText('sv-d',r.rawDist.toFixed(1)+' km*');
   setText('sv-s',String(r.tour.length));
-  setText('sv-drive','—');
-  setText('sv-total','—');
+  setText('sv-drive','—');setText('sv-total','—');
   setText('sv-schedule','Obteniendo ruta real...');
   setText('sv-a',NAMES[idx]+(r.isBest?' ✓ mejor':''));
-  setStatus('Trazando "'+NAMES[idx]+'" por calles reales (OSRM)...','run');
+  setStatus('Trazando "'+NAMES[idx]+'" por calles (OSRM)...','run');
   var myToken=++osrmToken;
   fetchOSRM(r.tour).then(function(trip){
     if(myToken!==osrmToken)return;
@@ -1217,8 +1282,7 @@ function selectAlgo(idx){
     var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
     var startT=(el('start-time')||{value:'08:00'}).value||'08:00';
     var totalMin=driveMin+r.tour.length*vm;
-    setText('sv-d',km+' km');
-    setText('sv-drive',fmtMin(driveMin));
+    setText('sv-d',km+' km');setText('sv-drive',fmtMin(driveMin));
     setText('sv-total',fmtMin(totalMin));
     setText('sv-schedule','Salida: '+startT+' → '+addMinToTime(startT,totalMin)+' ('+r.tour.length+'×'+vm+'min + '+fmtMin(driveMin)+' cond.)');
     setStatus('"'+NAMES[idx]+'": '+km+' km · '+fmtMin(totalMin)+' total'+(r.isBest?' ← mejor':''),'ok');
@@ -1233,15 +1297,13 @@ function selectAlgo(idx){
     setText('sv-drive','~'+fmtMin(driveEst)+'*');
     setText('sv-total','~'+fmtMin(totalMin)+'*');
     setText('sv-schedule','Salida: '+startT+' → est. '+addMinToTime(startT,totalMin)+' (* sin OSRM)');
-    setStatus('OSRM no disponible. "'+NAMES[idx]+'": ~'+r.rawDist.toFixed(1)+' km','warn');
+    setStatus('OSRM no disponible. Ruta aproximada.','warn');
     toast('OSRM no disponible, ruta aproximada','warn');
   });
   document.querySelectorAll('.cp-row').forEach(function(node,i){node.classList.toggle('cp-active',i===idx);});
 }
 
-// ══════════════════════════════════════════════════
-//  PANEL COMPARACIÓN
-// ══════════════════════════════════════════════════
+// ── COMPARE PANEL ─────────────────────────────────
 function updateCompare(bestIdx){
   setStyle('compare-panel','display','block');
   var rows=el('cp-rows');if(!rows)return;
@@ -1260,9 +1322,7 @@ function updateCompare(bestIdx){
   });
 }
 
-// ══════════════════════════════════════════════════
-//  LISTA LATERAL
-// ══════════════════════════════════════════════════
+// ── RENDER LIST ───────────────────────────────────
 function renderList(order){
   var list=el('route-list');if(!list)return;
   if(!points.length){list.innerHTML='<div class="empty">Ningún punto cargado</div>';return;}
@@ -1273,25 +1333,34 @@ function renderList(order){
   order.forEach(function(idx,pos){
     var p=points[idx];if(!p)return;
     var isStart=(idx===startIdx);
+    var isGPS=!!(p._isGPS);
+    var isVisited=visitedSet.has(idx);
     var sc=SEG_CONFIG[p.segment||'pequeño'];
-    var color=isStart?'#22aa55':sc.color;
+    var color=isGPS?'#00aacc':isStart?'#22aa55':sc.color;
     var div=document.createElement('div');
-    div.className='ri'+(isStart?' start-point':'');
+    div.className='ri'+(isStart?' start-point':isGPS?' gps-start':'')+(isVisited?' visited':'');
     div.setAttribute('data-idx',idx);
     div.setAttribute('data-seg',p.segment||'pequeño');
-    if(activeSegFilter&&(p.segment||'pequeño')!==activeSegFilter&&!isStart)div.classList.add('filtered-out');
+    if(activeSegFilter&&(p.segment||'pequeño')!==activeSegFilter&&!isStart&&!isGPS)div.classList.add('filtered-out');
     div.innerHTML=
       '<div class="rn" style="background:'+color+'">'+(pos+1)+'</div>'+
       '<div class="ri-body">'+
-        '<div class="rname">'+(isStart?'★ ':'')+p.name+'</div>'+
+        '<div class="rname">'+(isGPS?'📍 ':isStart?'★ ':'')+p.name+'</div>'+
         (p.address?'<div class="raddr">'+p.address+'</div>':'')+
         '<div class="ri-meta">'+
           '<span class="seg-badge" style="background:'+sc.color+'22;color:'+sc.color+'">'+sc.label+'</span>'+
+          (isVisited?'<span style="font-size:9px;color:#7acc44;margin-left:3px">✓ visitado</span>':'')+
           '<span class="time-badge">~'+addMinToTime(startT,accMin)+'</span>'+
         '</div>'+
       '</div>'+
       '<div class="ri-actions">'+
-        (!isStart?'<button class="ri-btn" onclick="setStartFromList('+idx+',event)">→ Inicio</button>':'<span style="font-size:9px;color:#22aa55">INICIO</span>')+
+        (isGPS?'<span style="font-size:9px;color:#00ccff">GPS</span>':
+          (!isStart?'<button class="ri-btn" onclick="setStartFromList('+idx+',event)" title="Usar como inicio">★</button>':'<span style="font-size:9px;color:#22aa55">INICIO</span>')
+        )+
+        (isGPS?'':
+          '<button class="ri-btn visited-btn" onclick="toggleVisited('+idx+',event)" title="'+(isVisited?'Marcar pendiente':'Marcar visitado')+'">'+(isVisited?'↺':'✓')+'</button>'+
+          '<button class="ri-btn del" onclick="removePoint('+idx+',event)" title="Eliminar punto">✕</button>'
+        )+
       '</div>';
     div.onclick=(function(pidx,ii,d){return function(e){
       if(e.target.tagName==='BUTTON')return;
@@ -1305,23 +1374,21 @@ function renderList(order){
   });
 }
 
-// ══════════════════════════════════════════════════
-//  EXPORTAR
-// ══════════════════════════════════════════════════
+// ── EXPORT ────────────────────────────────────────
 function exportRoute(){
   if(!results[activeAlgo]||!points.length)return;
   var order=results[activeAlgo].tour;
   var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
   var startT=(el('start-time')||{value:'08:00'}).value||'08:00';
-  var rows=[['Orden','Nombre','Dirección','Segmento','Lat','Lon','ETA estimado','Visita(min)','Algoritmo']];
+  var rows=[['Orden','Nombre','Dirección','Segmento','Lat','Lon','ETA estimado','Visita(min)','Estado','Algoritmo']];
   var accMin=0;
   order.forEach(function(idx,pos){
     var p=points[idx];if(!p)return;
-    rows.push([pos+1,p.name,p.address,SEG_CONFIG[p.segment||'pequeño'].label,p.lat,p.lon,addMinToTime(startT,accMin),vm,NAMES[activeAlgo]]);
+    rows.push([pos+1,p.name,p.address,SEG_CONFIG[p.segment||'pequeño'].label,p.lat,p.lon,addMinToTime(startT,accMin),vm,visitedSet.has(idx)?'Visitado':'Pendiente',NAMES[activeAlgo]]);
     accMin+=vm;
   });
   var ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:6},{wch:30},{wch:35},{wch:10},{wch:12},{wch:12},{wch:12},{wch:10},{wch:20}];
+  ws['!cols']=[{wch:6},{wch:30},{wch:35},{wch:10},{wch:12},{wch:12},{wch:12},{wch:10},{wch:10},{wch:20}];
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Ruta');
   if(results.every(function(r){return r;})){
@@ -1330,35 +1397,97 @@ function exportRoute(){
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cmp),'Comparativa');
   }
   XLSX.writeFile(wb,'ruta_lima_'+NAMES[activeAlgo].replace(/\s+/g,'_')+'.xlsx');
-  toast('Exportado: ruta + comparativa','ok');
-  setStatus('Exportado con ETA por cliente y comparativa de algoritmos.','ok');
+  toast('Exportado con estado de visitas','ok');
 }
 
-// ══════════════════════════════════════════════════
-//  LIMPIAR
-// ══════════════════════════════════════════════════
+// ── CLEAR ─────────────────────────────────────────
 function clearAll(rs){
   osrmToken++;
-  points=[];results=[null,null,null,null];activeAlgo=0;startIdx=0;activeSegFilter=null;
+  if(gpsActive)stopGPS();
+  points=[];results=[null,null,null,null];activeAlgo=0;startIdx=0;activeSegFilter=null;visitedSet=new Set();
   markersLayer.forEach(function(m){map.removeLayer(m);});markersLayer=[];
   clearLines();
   setHtml('route-list','<div class="empty">Ningún punto cargado</div>');
   setStyle('stats','display','none');
   setStyle('compare-panel','display','none');
-  setStyle('search-box','display','none');
+  setStyle('search-wrap','display','none');
+  setStyle('add-point-panel','display','none');
   setProp('btn-run','disabled',true);
   setProp('btn-clear','disabled',true);
   setProp('btn-export','disabled',true);
   setProp('btn-seg','disabled',true);
   setText('pcnt','0 pts');
   setHtml('start-select','<option value="-1">— Seleccionar —</option>');
-  setText('start-info','Sin punto de inicio. Selecciona arriba o haz clic en un marcador.');
+  setText('start-info','Sin punto de inicio.');
   var si=el('start-info');if(si)si.className='start-info';
   setText('time-info','Configura y calcula para ver el horario.');
   setHtml('seg-counts','');
+  var vb=el('visited-badge');if(vb)vb.style.display='none';
   for(var i=0;i<4;i++){var b=el('ab-'+i);if(b)b.className='algo-btn'+(i===0?' selected':'');}
   var si2=el('search-input');if(si2)si2.value='';
-  if(rs!==false){setStatus('Listo. Sube un Excel o arrastra el archivo.','idle');toast('Todo limpio','ok',1500);}
+  if(rs!==false){setStatus('Listo. Sube un Excel o prueba el Demo.','idle');toast('Todo limpio','ok',1500);}
+}
+
+// ── UI HELPERS ────────────────────────────────────
+function setStatus(msg,s){
+  setText('stxt',msg);
+  var d=el('sdot');
+  if(d)d.className='dot '+({run:'run',ok:'ok',warn:'warn',gps:'gps'}[s]||'');
+}
+function setProgress(p){setStyle('progress-bar','width',p+'%');}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function fmtMin(m){var h=Math.floor(m/60),mn=Math.round(m%60);return h>0?(h+'h '+(mn>0?mn+'min':'')):(mn+'min');}
+function addMinToTime(t,mins){
+  var p=t.split(':'),h=parseInt(p[0]),m=parseInt(p[1]),tot=h*60+m+Math.round(mins);
+  var nh=Math.floor(tot/60)%24,nm=tot%60;
+  return(nh<10?'0':'')+nh+':'+(nm<10?'0':'')+nm;
+}
+function updateTimeInfo(){
+  var vm=parseInt((el('visit-time')||{value:'20'}).value)||20;
+  var st=(el('start-time')||{value:'08:00'}).value||'08:00';
+  if(!points.length){setText('time-info','Configura y calcula para ver el horario.');return;}
+  setText('time-info',points.length+' visitas × '+vm+' min = '+fmtMin(points.length*vm)+'. Salida: '+st);
+}
+function toggleToolbar(){
+  var tb=el('toolbar');if(!tb)return;tb.classList.toggle('collapsed');
+}
+function toggleSidebar(){
+  var sb=el('sidebar'),tog=el('sidebar-toggle');if(!sb)return;
+  sidebarOpen=!sidebarOpen;
+  sb.classList.toggle('collapsed',!sidebarOpen);
+  if(tog)tog.textContent=sidebarOpen?'▶':'◀';
+  setTimeout(function(){if(map)map.invalidateSize();},220);
+}
+function toggleSidebarMobile(){
+  var sb=el('sidebar');if(!sb)return;
+  var isCollapsed=sb.classList.contains('collapsed');
+  sb.classList.toggle('collapsed',!isCollapsed);
+  setTimeout(function(){if(map)map.invalidateSize();},270);
+}
+function toggleSection(bodyId,arrowId){
+  var body=el(bodyId),arrow=el(arrowId);if(!body)return;
+  var collapsed=body.classList.toggle('collapsed');
+  if(arrow)arrow.textContent=collapsed?'▸':'▾';
+  body.style.maxHeight=collapsed?'0':'300px';
+}
+function zoomToRoute(){
+  if(!points.length){toast('No hay puntos cargados','warn');return;}
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  var lats=order.map(function(i){return points[i].lat;}),lons=order.map(function(i){return points[i].lon;});
+  map.fitBounds([[Math.min.apply(null,lats),Math.min.apply(null,lons)],[Math.max.apply(null,lats),Math.max.apply(null,lons)]],{padding:[50,50],animate:true});
+}
+function toggleLabels(){
+  showNumbers=!showNumbers;
+  var b=el('btn-toggle-labels');if(b)b.classList.toggle('active',showNumbers);
+  var order=results[activeAlgo]?results[activeAlgo].tour:points.map(function(_,i){return i;});
+  renderMarkers(order,activeAlgo,startIdx);
+  toast(showNumbers?'Números activados':'Números ocultos','ok',1500);
+}
+function handleResize(){
+  var isMobile=window.innerWidth<=640;
+  var tog=el('sidebar-toggle');if(!tog)return;
+  if(isMobile){tog.title='Expandir/colapsar panel';tog.onclick=function(){toggleSidebarMobile();};}
+  else{tog.onclick=function(){toggleSidebar();};}
 }
 </script>
 </body>
